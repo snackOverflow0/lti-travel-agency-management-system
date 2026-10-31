@@ -1,0 +1,102 @@
+[
+    [
+        "Unauthenticated requests are rejected (401)",
+        true,
+        "401"
+    ],
+    [
+        "Wrong password is rejected without revealing which field (401)",
+        true,
+        "Email or password is incorrect"
+    ],
+    [
+        "Owner signs in; \/auth\/me returns role and permissions",
+        true,
+        "27 permissions"
+    ],
+    [
+        "State-changing request without CSRF token is rejected (403)",
+        true,
+        "403"
+    ],
+    [
+        "Validation errors return field messages (422)",
+        true,
+        "{\"firstName\":\"Required\"}"
+    ],
+    [
+        "Create contact persists to MySQL (201) and is retrievable",
+        true,
+        "id 5"
+    ],
+    [
+        "Duplicate email is detected (409)",
+        true,
+        "409"
+    ],
+    [
+        "Search and pagination query MySQL",
+        true,
+        "total 1"
+    ],
+    [
+        "SQL injection in search is treated as text",
+        true,
+        "no rows"
+    ],
+    [
+        "Optimistic concurrency: stale version is rejected (409)",
+        true,
+        "second writer blocked"
+    ],
+    [
+        "Advisor sees only assigned contacts; other records return 404 by ID",
+        true,
+        "sees Okafor; other -> 404"
+    ],
+    [
+        "Advisor cannot assign a contact to another staff member (403)",
+        true,
+        "403"
+    ],
+    [
+        "Finance staff can view but not create or delete contacts (403)",
+        true,
+        "view 200, create 403, delete 403"
+    ],
+    [
+        "Deactivation blocks sign-in and ends an existing session",
+        true,
+        "session 401, login 403"
+    ],
+    [
+        "Admin-assisted password reset link works once",
+        true,
+        "weak 422, reset 200, reuse 400, login 200"
+    ],
+    [
+        "Non-admin cannot create reset links or change staff (403)",
+        true,
+        "403\/403"
+    ],
+    [
+        "Login rate limit: 6th failure in window returns 429",
+        true,
+        "blocked even with correct password"
+    ],
+    [
+        "Soft delete hides the contact; audit log records every change",
+        true,
+        "contact.created > contact.updated > contact.deleted"
+    ],
+    [
+        "Logout ends the session (401 afterwards)",
+        true,
+        "401"
+    ],
+    [
+        "Session cookie is HttpOnly and SameSite=Lax",
+        true,
+        "HttpOnly; SameSite=Lax (Secure is added automatically under HTTPS)"
+    ]
+]
