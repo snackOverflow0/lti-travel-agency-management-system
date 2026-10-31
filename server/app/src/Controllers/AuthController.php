@@ -15,10 +15,13 @@ final class AuthController {
         $admin = Auth::require('staff.manage');
         $u = Db::one('SELECT id, email FROM users WHERE id=?', [(int)$p['id']]);
         if (!$u) throw new HttpError(404, 'Staff member not found');
+        return self::issueResetLink((int)$admin['id'], (int)$u['id']);
+    }
+    public static function issueResetLink(int $adminId, int $userId): array {
         $token = bin2hex(random_bytes(32));
-        Db::exec('UPDATE password_resets SET used_at=UTC_TIMESTAMP() WHERE user_id=? AND used_at IS NULL', [$u['id']]);
-        Db::exec('INSERT INTO password_resets (user_id, token_hash, expires_at, created_by, created_at) VALUES (?,?,UTC_TIMESTAMP() + INTERVAL 60 MINUTE,?,UTC_TIMESTAMP())', [$u['id'], hash('sha256', $token), $admin['id']]);
-        Audit::log((int)$admin['id'], 'auth.reset_link_created', 'user', $u['id']);
+        Db::exec('UPDATE password_resets SET used_at=UTC_TIMESTAMP() WHERE user_id=? AND used_at IS NULL', [$userId]);
+        Db::exec('INSERT INTO password_resets (user_id, token_hash, expires_at, created_by, created_at) VALUES (?,?,UTC_TIMESTAMP() + INTERVAL 60 MINUTE,?,UTC_TIMESTAMP())', [$userId, hash('sha256', $token), $adminId]);
+        Audit::log($adminId, 'auth.reset_link_created', 'user', $userId);
         return ['resetUrl' => rtrim($GLOBALS['LTI_CFG']['app_url'], '/') . '/#/reset?token=' . $token, 'expiresInMinutes' => 60];
     }
     public static function resetPassword(): array {

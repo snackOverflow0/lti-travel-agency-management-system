@@ -1,0 +1,77 @@
+[
+    [
+        "Create trip (201) is stored in MySQL with primary traveler and default itinerary",
+        true,
+        "trip 3"
+    ],
+    [
+        "Validation: end before start (422); archived on create refused (422)",
+        true,
+        "422\/422"
+    ],
+    [
+        "Update trip with version; stale version returns 409",
+        true,
+        "saved; stale blocked"
+    ],
+    [
+        "Travelers: link a second contact; two primaries rejected (422)",
+        true,
+        "2 travelers"
+    ],
+    [
+        "Scoping: another advisor cannot read or list this trip (404 \/ hidden); finance cannot create (403)",
+        true,
+        "advisor2 sees Kenya Family Safari"
+    ],
+    [
+        "Itinerary save: new option\/day\/activities get ids; order persisted; stale rev 409",
+        true,
+        "reordered: Belcanto dinner > Alfama walk"
+    ],
+    [
+        "Publish creates a version; internal notes are not in the client snapshot",
+        true,
+        "version 3"
+    ],
+    [
+        "Editing the draft does not change the published version",
+        true,
+        "published snapshot unchanged; draft flagged"
+    ],
+    [
+        "Traveler sees only own published trips; snapshot excludes internal notes",
+        true,
+        "ok"
+    ],
+    [
+        "Traveler cannot open another client\u2019s trip or staff endpoints",
+        true,
+        "portal 404, staff APIs 403"
+    ],
+    [
+        "Traveler approves: approval recorded, trip status becomes Approved, staff sees it",
+        true,
+        "approved; bad option 422"
+    ],
+    [
+        "Limited-access traveler cannot approve and sees no prices",
+        true,
+        "limited: view only, no prices"
+    ],
+    [
+        "Archive keeps travelers, itinerary and versions; trip leaves the portal",
+        true,
+        "related rows intact: {\"tv\":2,\"op\":1,\"ve\":1}"
+    ],
+    [
+        "Staff creates a traveler portal login for a contact (one-time link), traveler signs in",
+        true,
+        "traveler account works; advisor cannot create (403)"
+    ],
+    [
+        "Audit log records trip, itinerary and portal actions",
+        true,
+        "itinerary.published, trip.created, trip.status_changed, trip.travelers_updated, itinerary.saved, portal.approved, trip.archived"
+    ]
+]

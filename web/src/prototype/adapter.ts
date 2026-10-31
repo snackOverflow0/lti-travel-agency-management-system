@@ -2,9 +2,10 @@
 // Live (database): sign-in/out, role, Contacts list/detail/create/edit/delete, Staff accounts.
 // Everything else stays at prototype level with browser-local sample data and a visible label.
 import { api, ApiError, Contact, User, ROLE_LABEL, TYPE_LABEL } from '../api';
+import { installTrips, pageNote, afterDraw, contactTripsCard } from './trips';
 const w = window as any;
 const ROLE_MAP: Record<string, string> = { owner: 'Owner', admin: 'Admin', supervisor: 'Supervisor', advisor: 'Advisor', sales: 'Sales', operations: 'Operations', finance: 'Finance', traveler: 'Traveler' };
-const LIVE = new Set(['contacts', 'lcontact', 'staff']);
+const LIVE = new Set(['contacts', 'lcontact', 'staff']);  // trips/itinerary/portal decided by pageNote()
 const PHASE: Record<string, string> = { tr: 'Phase 3 (trips, itineraries, client portal)', co: 'Phase 4 (forms, documents)', bo: 'Phases 4–5 (suppliers, bookings, finance)', cm: 'Phase 5 (finance)', ta: 'Phase 6 (tasks, calendar)', em: 'Phase 6 (email)', au: 'Phase 6 (automations, workflows)', li: 'Phase 3–6 (content library)', ca: 'Phase 7 (calling)', rp: 'Phase 8 (reporting)', he: 'Phase 8' };
 let me: User;
 const can = (p: string) => me.permissions.includes(p);
@@ -29,7 +30,7 @@ function contactsPage(legacy: () => string): string {
   const t = tb('lcTab', ['Database contacts', 'Demo CRM records (prototype)']);
   const head = hd('Contacts', can('contacts.create') && t === 'Database contacts' ? `<button class="btn" onclick="lcNew()">${ic('plus', 14)} New contact</button>` : '', t === 'Database contacts' ? 'Live records from the LTI database' : 'Sample records used by the prototype trips, portal and calls');
   const tabsH = tabs('lcTab', ['Database contacts', 'Demo CRM records (prototype)']);
-  if (t !== 'Database contacts') return head + tabsH + `<div class="dm">Prototype sample data stored in this browser only. These demo clients power the trip, portal and softphone screens until Phase 3 connects trips to database contacts.</div>` + legacy().replace(/^<div class="hd">[\s\S]*?<\/div><\/div>/, '');
+  if (t !== 'Database contacts') return head + tabsH + `<div class="dm">Prototype sample data stored in this browser only. These demo clients still power the group trip, booking, payment and softphone screens until their phases connect.</div>` + withoutDbContacts(legacy).replace(/^<div class="hd">[\s\S]*?<\/div><\/div>/, '');
   if (!LC.data && !LC.loading) lcLoad();
   const d = LC.data, pages = d ? Math.max(1, Math.ceil(d.total / d.perPage)) : 1;
   const rows = d ? d.items.map(c => `<tr class="c" tabindex="0" onclick="lcOpen(${c.id})" onkeydown="if(event.key=='Enter')lcOpen(${c.id})"><td><span class="lk">${h(c.firstName)} ${h(c.lastName)}</span></td><td>${h(c.email || '—')}</td><td>${h(c.phone || '—')}</td><td><span class="tag">${h(TYPE_LABEL[c.type])}</span></td><td>${h(c.leadStatus || '—')}</td><td>${h(c.assignedName || 'Unassigned')}</td></tr>`).join('') : '';
@@ -67,6 +68,7 @@ async function saveContact(c?: Contact, allowDuplicate = false) {
     if (e.status === 409 && e.fields && (e.fields as any).email && !c && confirm('A contact with this email already exists. Create anyway?')) return saveContact(c, true);
   }
 }
+const withoutDbContacts = (fn: () => string) => { const all = S.cm; S.cm = all.filter((c: any) => !c.db); try { return fn(); } finally { S.cm = all; } };
 /* ---------------- Contact detail (live) ---------------- */
 const LD: { id: number; data: Contact | null; err: string; loading: boolean } = { id: 0, data: null, err: '', loading: false };
 function lcLoadOne(id: number) { LD.loading = true; LD.err = ''; call<{ contact: Contact }>('GET', '/contacts/' + id).then(r => { LD.data = r.contact; }).catch(e => { LD.data = null; LD.err = e instanceof ApiError ? e.message : 'Could not load contact'; }).finally(() => { LD.loading = false; if (S.pg === 'lcontact') draw(); }); }
@@ -80,7 +82,8 @@ function contactDetailPage(): string {
   const rows: [string, string][] = [['Email', c.email || '—'], ['Phone', c.phone || '—'], ['Type', TYPE_LABEL[c.type]], ['Lead status', c.leadStatus || '—'], ['Source', c.source || '—'], ['Assigned to', c.assignedName || 'Unassigned'], ['Birthday', fmt(c.birthday)], ['Anniversary', fmt(c.anniversary)], ['Passport expiration', fmt(c.passportExpiry)], ['Created', fmt(c.createdAt)], ['Last updated', fmt(c.updatedAt)]];
   return hd(h(`${c.firstName} ${c.lastName || ''}`.trim()), `<button class="btn o" onclick="go('contacts')">Back to contacts</button>${phone ? `<a class="btn o" href="tel:${h(phone)}">${ic('phone', 14)} Open phone app</a><button class="btn o" onclick="callTo('${h(c.phone)}','','')">Softphone (simulated)</button>` : ''}${can('contacts.edit') ? `<button class="btn o" onclick="lcEdit()">Edit</button>` : ''}${can('contacts.delete') ? `<button class="btn o" onclick="lcDelete()">Delete</button>` : ''}`, `${h(TYPE_LABEL[c.type])} · live database record`)
     + cd('Details', `<div class="g g2">${rows.map(([k, v]) => `<div class="kv"><b>${k}</b><span data-field="${k}">${h(v)}</span></div>`).join('')}</div>${c.notes ? `<h3 class="h3" style="font-size:13px;margin-top:12px">Notes</h3><p style="white-space:pre-wrap">${h(c.notes)}</p>` : ''}`)
-    + `<div class="info"><div><b>More CRM sections arrive with their backend phases</b><p>Trips, communication history, documents, tasks and automations for database contacts are connected in Phases 3–7. The full prototype CRM profile remains available for demo records under Contacts › Demo CRM records.</p></div></div>`;
+    + contactTripsCard(c.id)
+    + `<div class="info"><div><b>More CRM sections arrive with their backend phases</b><p>Communication history, documents, tasks and automations for database contacts are connected in Phases 4–7. The full prototype CRM profile remains available for demo records under Contacts › Demo CRM records.</p></div></div>`;
 }
 /* ---------------- Staff accounts (live) ---------------- */
 const SF: { items: any[] | null; err: string; loading: boolean } = { items: null, err: '', loading: false };
@@ -101,13 +104,13 @@ function profileBlock(): string {
 }
 function banner() {
   const m = document.getElementById('m'); if (!m || LIVE.has(S.pg) || X.role === 'Traveler') return;
+  const note = pageNote(); if (note === 'live') return;
   const s = sec(S.pg); const d = document.createElement('div'); d.className = 'dm proto-note'; d.setAttribute('role', 'note');
-  d.textContent = S.pg === 'dashboard' ? 'Dashboard figures come from prototype sample data kept in this browser. They switch to live database figures as Phases 3–8 connect each module. Contacts and Staff accounts are already live.'
-    : `Prototype module — sample data kept in this browser only and not saved to the database. Database connection planned for ${PHASE[s[0]] || 'a later phase'}.`;
+  d.textContent = note || `Prototype module — sample data kept in this browser only and not saved to the database. Database connection planned for ${PHASE[s[0]] || 'a later phase'}.`;
   m.prepend(d);
-  const bt = m.querySelector('.bnr .bt p'); if (bt) bt.textContent = 'You are signed in with your LTI account. Contacts and Staff accounts are live database modules; all other modules still run on prototype sample data in this browser until their backend phase.';
+  const bt = m.querySelector('.bnr .bt p'); if (bt) bt.textContent = 'You are signed in with your LTI account. Contacts, Staff accounts, Trips, Itineraries and the traveler portal are live database modules; all other modules still run on prototype sample data in this browser until their backend phase.';
 }
-export function installAdapter(user: User) {
+export async function installAdapter(user: User) {
   me = user;
   X.role = ROLE_MAP[user.role] || 'Advisor'; X.phone && (X.phone.open = 0);
   const bo = N.find((n: any) => n[0] === 'bo'); const settings = bo[3][2][1]; if (!settings.some((x: any) => x[0] === 'staff')) settings.splice(1, 0, ['staff', 'Staff accounts']);
@@ -125,10 +128,11 @@ export function installAdapter(user: User) {
   w.lcPage = (p: number) => { LC.page = p; lcLoad(); };
   w.sfToggle = async (id: number, active: number) => { try { await call('PATCH', '/staff/' + id, { isActive: !!active }); toast(active ? 'Account reactivated' : 'Account deactivated'); sfLoad(); } catch (e) { toast(e instanceof ApiError ? e.message : 'Failed'); } };
   w.sfReset = async (id: number) => { try { const r = await call<{ resetUrl: string }>('POST', `/staff/${id}/reset-link`); dlg('One-time password reset link', `<p>Give this link to the staff member through a trusted channel. It works once and expires in 60 minutes.</p><input readonly aria-label="Reset link" value="${h(r.resetUrl)}" onfocus="this.select()">`, null); } catch (e) { toast(e instanceof ApiError ? e.message : 'Failed'); } };
-  const origDraw = w.draw; w.draw = function () { origDraw(); banner(); };
+  const origDraw = w.draw; w.draw = function () { origDraw(); banner(); afterDraw(); };
   if (location.hash.startsWith('#/') || !location.hash) location.hash = 'dashboard';
   const fromHash = () => { const m = location.hash.match(/^#lcontact-(\d+)$/); if (m) { LD.id = Number(m[1]); LD.err = ''; S.pg = 'lcontact'; return true; } return false; };
   window.addEventListener('hashchange', () => { if (fromHash()) draw(); });
   if (!fromHash()) { const p = location.hash.slice(1); S.pg = Pg[p] ? p : 'dashboard'; }
+  try { await installTrips(user, can); } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
   w.__LTI_LIVE = true; draw();
 }

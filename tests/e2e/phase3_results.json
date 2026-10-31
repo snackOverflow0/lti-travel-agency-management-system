@@ -1,0 +1,57 @@
+[
+ {
+  "name": "TC01 Create a trip in the restored Trips screen; record is in MySQL",
+  "ok": true,
+  "detail": "trip 3: Inquiry|Lisbon, Portugal|2027-05-10|2027-05-18|1"
+ },
+ {
+  "name": "TC02 Refresh: the trip remains (loaded from MySQL)",
+  "ok": true,
+  "detail": "present after reload; sample trips not shown"
+ },
+ {
+  "name": "TC03 Edit the trip (status, destination, internal notes); MySQL changes",
+  "ok": true,
+  "detail": "Planning|Lisbon & Porto, Portugal|Prefers boutique hotels"
+ },
+ {
+  "name": "TC04 Link a real CRM contact as a traveler from the Travelers section",
+  "ok": true,
+  "detail": "1:primary,3:full"
+ },
+ {
+  "name": "TC05–TC07 Itinerary: add a day and activities in the editor, reorder, saved order in MySQL",
+  "ok": true,
+  "detail": "Belcanto dinner>Alfama walk>Pena Palace"
+ },
+ {
+  "name": "TC08–TC09 Publish creates a version; editing the draft leaves the published version unchanged",
+  "ok": true,
+  "detail": "version 3 unchanged by draft edit; indicator shown"
+ },
+ {
+  "name": "TC10 Permitted traveler signs in and opens the published itinerary (no internal notes); approval saved",
+  "ok": true,
+  "detail": "portal shows published itinerary; Approved|1"
+ },
+ {
+  "name": "TC11 A traveler cannot access another client’s trip (UI list and direct API)",
+  "ok": true,
+  "detail": "sees Kenya Family Safari, Douro Discovery 2027; other trip 404; staff API 403"
+ },
+ {
+  "name": "TC12 Archive a trip from the trip Actions menu; related records intact",
+  "ok": true,
+  "detail": "travelers/activities/versions 2/3/1 unchanged"
+ },
+ {
+  "name": "TC13 Contacts and Staff still work (live)",
+  "ok": true,
+  "detail": "ok"
+ },
+ {
+  "name": "TC14 Dashboard and prototype modules remain accessible and labelled",
+  "ok": true,
+  "detail": "73 pages render; prototype pages labelled"
+ }
+]

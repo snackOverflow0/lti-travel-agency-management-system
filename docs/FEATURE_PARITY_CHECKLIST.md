@@ -1,4 +1,4 @@
-# Feature parity checklist — Phase 1 frontend restoration
+# Feature parity checklist — after Phase 3
 
 The complete Revision 27 interface is restored inside the full-stack application. **Live** = reads/writes the PHP API and MySQL. **Restored — prototype** = the original Revision 27 screen and behaviour, running on sample data stored in the user’s browser, with a visible label on every such page naming its planned backend phase.
 
@@ -12,9 +12,10 @@ The complete Revision 27 interface is restored inside the full-stack application
 | Demo CRM records (full 11-tab profile, relationships, import, duplicates) | Restored — prototype | Second tab of Contacts; browser-local sample data |
 | Staff accounts (list, deactivate, reactivate, reset link) | Live | New Back office › Settings page |
 | Dashboard | Restored — prototype | Figures from sample data; labelled |
-| Trips: board, list, calendar, trip detail (18 sections) | Restored — prototype | Phase 3 |
-| Itinerary editor, versions, publish | Restored — prototype | Phase 3 |
-| Client portal (Primary / Full / Limited) | Restored — prototype | Phase 3; traveler accounts already sign in and are routed to it |
+| Trips: board, list, calendar, search, filters, create, edit, archive | **Live (Phase 3)** | Database trips only; sample trips no longer shown here |
+| Trip detail: overview, travelers, proposal, itinerary, notes | **Live (Phase 3)** | Other sections labelled with their phase |
+| Itinerary editor: options, days, activities, drag/reorder, publish, version history | **Live (Phase 3)** | Whole-draft save with revision check |
+| Client portal (Primary / Full / Limited): published itinerary, option choice, approve, request changes, comments | **Live (Phase 3)** | Travelers see only their published, non-archived trips |
 | Group trips, landing page, registrations, sync | Restored — prototype | Phase 4 |
 | Suppliers, bookings | Restored — prototype | Phase 4 |
 | Forms & intake, documents | Restored — prototype | Phase 4 |
@@ -29,7 +30,7 @@ The complete Revision 27 interface is restored inside the full-stack application
 | Settings, agency details, tags, staff & permissions matrix, integrations, terms, help center | Restored — prototype | Settings stored in the browser until their phase |
 
 ## Known gaps (honest)
-- Prototype modules use the prototype’s sample clients (Amelia Hartwell, the Shahs, and so on), not database contacts. They are linked in Phase 3.
+- Bookings, payments, group trips and other prototype modules still use the prototype’s sample trips and clients until Phases 4–5.
 - Prototype sample data lives in each browser’s localStorage (fictional data only). Staff sharing a browser see the same sample data; nothing is shared between computers. Database contacts are never copied into browser storage (tested).
 - The live contact detail shows details, edit and delete; the richer CRM tabs exist for demo records only until their phases.
 - “Staff & permissions” (matrix and role previews) is still the prototype page; actual staff management is the live “Staff accounts” page.

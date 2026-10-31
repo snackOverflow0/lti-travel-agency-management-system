@@ -1,4 +1,4 @@
-# LTI Travel Agency Management System — full-stack (Phase 0–2 + Phase 1 frontend restoration)
+# LTI Travel Agency Management System — full-stack (Phases 0–3)
 
 Internal software for Luxury Travel Institute. React + TypeScript + Vite frontend (static build) and a plain-PHP REST API on MySQL, designed for the client's existing Network Solutions shared hosting with **$0 additional cost**.
 
@@ -7,6 +7,16 @@ Staff sign-in/out, secure sessions, CSRF, login rate limiting, eight roles with 
 
 ## Phase 1 frontend restoration
 After sign-in, the React shell boots the complete Revision 27 interface (`web/public/prototype/lti-prototype.js`, unchanged code) and `web/src/prototype/adapter.ts` connects it to the API: real role, sign-out, live **Contacts** (database tab), live **Staff accounts**. Every other page shows a “Prototype module” label and runs on browser-local sample data until its backend phase.
+
+## Phase 3 (trips, travelers, itineraries, client portal)
+Trips, trip travelers, itineraries and the traveler portal now use MySQL through the API. Apply migration `004_phase3.sql` (additive; no existing data changes). See `docs/PHASE3_COMPLETION_CHECKLIST.md`, `docs/API_PHASE3.md`, `docs/TEST_RESULTS.md`.
+
+### Windows / XAMPP
+1. Back up your database (phpMyAdmin › Export).
+2. Apply the migration: phpMyAdmin › your database › Import › `server/app/migrations/004_phase3.sql`, or `C:\xampp\php\php.exe server\app\bin\migrate.php` (applies only files not yet recorded).
+3. Run: `C:\xampp\php\php.exe -S 127.0.0.1:8000 -t server\public server\dev-router.php` (set `LTI_CONFIG` if your config is not `server\app\config\config.php`).
+4. Optional sample data for testing only: `seed_dev.php` adds two sample trips and traveler logins `traveler@lti.test` / `traveler2@lti.test`. **Do not run it against a database with real records.**
+5. Tests: create a separate test database and config from `server/app/config/config.local.example.php`; `run-tests.sh` (Git Bash/WSL) runs every suite; on plain Windows run the PHP suites with `php server\tests\api_phase3_test.php http://127.0.0.1:8000` after `migrate.php --fresh` and `seed_dev.php` on the **test** database. The browser suites need Node, Playwright and the `mysql` client on PATH (XAMPP: `C:\xampp\mysql\bin`).
 
 ## Run locally on 127.0.0.1:8000 (your PHP 8.2 setup)
 The ZIP includes the built frontend in `server/public/`, so npm is not needed just to run it.

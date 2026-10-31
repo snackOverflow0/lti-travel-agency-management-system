@@ -5,3 +5,5 @@ declare function hd(...a: any[]): string; declare function cd(...a: any[]): stri
 declare function ic(n: string, s?: number): string; declare function toast(t: string): void; declare function sel(...a: any[]): string; declare function val(id: string): any;
 declare function tabs(k: string, l: string[]): string; declare function tb(k: string, l: string[]): string; declare function searchBox(...a: any[]): string; declare function pill(...a: any[]): string;
 declare function callTo(...a: any[]): void; declare function sec(p: string): any; declare function mn(k: string): void;
+declare const STATUS_LEGACY: any; declare function fdr(a: string, b: string): string; declare function tripById(id: string): any; declare function ITX(id: string): any;
+declare function guard(p: string): boolean; declare function logA(...a: any[]): void; declare const TSEC: any[];

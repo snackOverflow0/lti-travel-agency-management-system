@@ -16,7 +16,7 @@ final class ContactController {
             'passportExpiry' => $r['passport_expiry'], 'notes' => $r['notes'], 'assignedTo' => $r['assigned_to'] === null ? null : (int)$r['assigned_to'],
             'assignedName' => $r['assigned_name'] ?? null, 'createdAt' => $r['created_at'], 'updatedAt' => $r['updated_at'], 'version' => (int)$r['version']];
     }
-    private static function find(array $u, int $id): array {
+    public static function find(array $u, int $id): array {
         [$w, $p] = self::scope($u);
         $r = Db::one("SELECT c.*, a.full_name assigned_name FROM contacts c LEFT JOIN users a ON a.id=c.assigned_to WHERE c.id=? AND c.deleted_at IS NULL AND $w", array_merge([$id], $p));
         if (!$r) throw new HttpError(404, 'Contact not found');   // identical response for missing and out-of-scope records
