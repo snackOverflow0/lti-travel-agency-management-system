@@ -4,7 +4,4 @@ server/app/config/config.php
 server/app/storage/documents/*
 !server/app/storage/documents/.gitkeep
 server/app/storage/logs/*
-server/public/assets/
-server/public/index.html
-server/public/logo.png
 *.log

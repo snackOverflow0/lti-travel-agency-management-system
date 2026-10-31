@@ -1,0 +1,62 @@
+[
+ {
+  "name": "Opening http://127.0.0.1:8000/ shows sign-in; after login the full Revision 27 interface appears",
+  "ok": true,
+  "detail": "11 sections: Back office, Trips, Tasks, Library, Automate, Emails, Contacts, Calls, Commission, Reporting, Help"
+ },
+ {
+  "name": "Every restored page renders without errors (owner); prototype pages labelled, live pages not",
+  "ok": true,
+  "detail": "73 pages rendered and correctly labelled"
+ },
+ {
+  "name": "Trip sections, tabbed pages and views render (prototype level)",
+  "ok": true,
+  "detail": "ok"
+ },
+ {
+  "name": "LIVE: create a database contact in the restored Contacts screen; it is in MySQL, survives reload, and is retrievable after a new sign-in",
+  "ok": true,
+  "detail": "contact 5: DB row, reload, sign-out/in, search, no localStorage copy"
+ },
+ {
+  "name": "LIVE: edit and delete contacts from the restored screens (server validation shown)",
+  "ok": true,
+  "detail": "edit + delete persisted"
+ },
+ {
+  "name": "LIVE Staff accounts: administrator deactivates a user; that user cannot sign in",
+  "ok": true,
+  "detail": "live staff management works"
+ },
+ {
+  "name": "Real roles drive the interface: Finance has no Automate/Library/Calls, no create; demo role switching is disabled",
+  "ok": true,
+  "detail": "nav filtered; role switch refused; API 403"
+ },
+ {
+  "name": "Advisor sees only assigned database contacts; another advisor’s contact by URL is refused",
+  "ok": true,
+  "detail": "scoped + direct URL refused"
+ },
+ {
+  "name": "Traveler account sees only the traveler portal and can sign out",
+  "ok": true,
+  "detail": "portal only"
+ },
+ {
+  "name": "Prototype modules stay interactive: create a trip, run the automation clock, open the softphone",
+  "ok": true,
+  "detail": "prototype interactions intact"
+ },
+ {
+  "name": "Mobile 390px: restored interface usable (drawer, dashboard, live contacts) with no horizontal overflow",
+  "ok": true,
+  "detail": "ok"
+ },
+ {
+  "name": "No emojis anywhere in the restored interface",
+  "ok": true,
+  "detail": "clean"
+ }
+]

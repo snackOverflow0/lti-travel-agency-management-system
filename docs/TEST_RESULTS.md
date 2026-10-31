@@ -1,9 +1,24 @@
-# Test results — full-stack vertical slice
+# Test report — Phase 1 frontend restoration
 
-Environment: Ubuntu 24.04, PHP 8.3.6 (built-in server), MariaDB 10.11.14, Node 22, Chromium (Playwright 1.56). Fresh migrated + seeded test database for each run.
+Environment: Ubuntu 24.04, PHP 8.3.6 built-in server on **127.0.0.1:8000**, MariaDB 10.11, Chromium via Playwright 1.56. Each run uses a freshly migrated and seeded test database. Your machine uses PHP 8.2; the code avoids 8.3-only features but was not executed on 8.2 here.
 
-## Passed automated tests
-### API integration (PHP, against MySQL) — 20/20
+## Restoration end-to-end tests — 12/12 passed
+| # | Test | Result | Evidence |
+|---|---|---|---|
+| 1 | Opening http://127.0.0.1:8000/ shows sign-in; after login the full Revision 27 interface appears | PASS | 11 sections: Back office, Trips, Tasks, Library, Automate, Emails, Contacts, Calls, Commission, Reporting, Help |
+| 2 | Every restored page renders without errors (owner); prototype pages labelled, live pages not | PASS | 73 pages rendered and correctly labelled |
+| 3 | Trip sections, tabbed pages and views render (prototype level) | PASS | ok |
+| 4 | LIVE: create a database contact in the restored Contacts screen; it is in MySQL, survives reload, and is retrievable after a new sign-in | PASS | contact 5: DB row, reload, sign-out/in, search, no localStorage copy |
+| 5 | LIVE: edit and delete contacts from the restored screens (server validation shown) | PASS | edit + delete persisted |
+| 6 | LIVE Staff accounts: administrator deactivates a user; that user cannot sign in | PASS | live staff management works |
+| 7 | Real roles drive the interface: Finance has no Automate/Library/Calls, no create; demo role switching is disabled | PASS | nav filtered; role switch refused; API 403 |
+| 8 | Advisor sees only assigned database contacts; another advisor’s contact by URL is refused | PASS | scoped + direct URL refused |
+| 9 | Traveler account sees only the traveler portal and can sign out | PASS | portal only |
+| 10 | Prototype modules stay interactive: create a trip, run the automation clock, open the softphone | PASS | prototype interactions intact |
+| 11 | Mobile 390px: restored interface usable (drawer, dashboard, live contacts) with no horizontal overflow | PASS | ok |
+| 12 | No emojis anywhere in the restored interface | PASS | clean |
+
+## API integration tests (unchanged from Phase 2, re-run) — 20/20 passed
 | # | Test | Result | Evidence |
 |---|---|---|---|
 | 1 | Unauthenticated requests are rejected (401) | PASS | 401 |
@@ -27,35 +42,16 @@ Environment: Ubuntu 24.04, PHP 8.3.6 (built-in server), MariaDB 10.11.14, Node 2
 | 19 | Logout ends the session (401 afterwards) | PASS | 401 |
 | 20 | Session cookie is HttpOnly and SameSite=Lax | PASS | HttpOnly; SameSite=Lax (Secure is added automatically under HTTPS) |
 
-### Browser end-to-end (React build → PHP → MySQL) — 8/8
-| # | Test | Result | Evidence |
-|---|---|---|---|
-| 1 | Sign-in rejects a wrong password with a clear message | PASS | Email or password is incorrect |
-| 2 | VERTICAL SLICE: staff login → create client → saved in MySQL → reload → retrieve (also after a new session) | PASS | contact 5 saved, reloaded, retrieved after re-login; audit row present |
-| 3 | Edit saves to MySQL and survives reload; server field errors are shown | PASS | edit persisted |
-| 4 | Finance role: no create button, no Staff menu, API refuses create | PASS | UI hides create; direct API call 403 |
-| 5 | Advisor cannot open another advisor’s client by changing the URL | PASS | list scoped; direct URL -> Contact not found |
-| 6 | Administrator deactivates a staff account; that person can no longer sign in | PASS | blocked with message |
-| 7 | Mobile 390px: contacts usable, no horizontal overflow, menu drawer works | PASS | ok |
-| 8 | No emojis rendered; no customer data in browser storage | PASS | clean |
+## Build checks
+TypeScript strict type check and Vite production build pass. The restored interface script is `server/public/prototype/lti-prototype.js` (882 KB, unchanged Revision 27 code).
 
-### Build checks
-- TypeScript `strict` type check: pass. Vite production build: pass (JS 166 KB, 54 KB gzipped).
-- `php -l` on every PHP file: pass. Migrations 001–003 apply cleanly (48 tables, 72 foreign keys).
+## Defects found and fixed during this phase
+- **Search race:** an older, unfiltered contacts request could finish after a newer search request and overwrite its results. Stale responses are now ignored.
+- **Refresh lost the open database contact:** the contact ID is now kept in the URL (`#lcontact-<id>`).
 
-## Manually verified
-- Login page, contacts list, detail and dialogs render with the Revision 27 CSS and icons (reviewed during test debugging).
+## Not run in this session
+- The 63-test Revision 27 prototype suite (it targets the standalone HTML file; the prototype code is unchanged). The restoration suite above re-checks all 73 pages, trip sections, tabs and key prototype interactions inside the integrated app.
+- Anything on Network Solutions hosting (Phase 0 still pending).
 
-## Simulated behaviour
-- None in the new application. (The Revision 27 HTML prototype is still a simulation; its 63-test Playwright suite is retained unchanged in the prototype package and was **not re-run** in this session.)
-
-## Hosting-dependent — not tested
-- Real Network Solutions PHP version, MySQL version and limits, Apache `.htaccess` routing (locally emulated by `server/dev-router.php`), HTTPS and the `Secure` cookie flag, cron, SMTP, IMAP, storage quotas.
-- PHP 7.4 compatibility: code avoids 8.x-only syntax but was only executed on PHP 8.3.
-
-## Unsupported at $0 (not tested, will not be simulated)
-- PSTN calling inside LTI, voicemail capture, call recording, TURN relay for strict networks.
-
-## Issues found during this work
-- Test-environment only: background servers launched in the same shell kept the tool session open; now started fully detached.
-- Test-side: navigating to an identical `#/login` URL does not trigger a load in Playwright; helper adjusted. No application defects found in the slice.
+## Simulated behaviour (by design until later phases)
+All modules labelled “Prototype module” — including the softphone, automations, payments and AI — are simulations on sample data.

@@ -1,9 +1,20 @@
-# LTI Travel Agency Management System — full-stack (Phase 0–2 vertical slice)
+# LTI Travel Agency Management System — full-stack (Phase 0–2 + Phase 1 frontend restoration)
 
 Internal software for Luxury Travel Institute. React + TypeScript + Vite frontend (static build) and a plain-PHP REST API on MySQL, designed for the client's existing Network Solutions shared hosting with **$0 additional cost**.
 
 ## What works today (verified by tests)
 Staff sign-in/out, secure sessions, CSRF, login rate limiting, eight roles with server-side permissions, account deactivation, administrator-assisted password reset, audit log, and the full contacts vertical slice (create, list, search, paginate, view, edit with conflict detection, soft delete, advisor-level record scoping) persisted in MySQL. The complete database schema for later phases is migrated (48 tables, 72 foreign keys) but its API endpoints are not built yet. See `docs/FEATURE_PARITY_CHECKLIST.md`.
+
+## Phase 1 frontend restoration
+After sign-in, the React shell boots the complete Revision 27 interface (`web/public/prototype/lti-prototype.js`, unchanged code) and `web/src/prototype/adapter.ts` connects it to the API: real role, sign-out, live **Contacts** (database tab), live **Staff accounts**. Every other page shows a “Prototype module” label and runs on browser-local sample data until its backend phase.
+
+## Run locally on 127.0.0.1:8000 (your PHP 8.2 setup)
+The ZIP includes the built frontend in `server/public/`, so npm is not needed just to run it.
+```
+# keep your existing server/app/config/config.php (not included in the ZIP)
+php -S 127.0.0.1:8000 -t server/public server/dev-router.php
+```
+If your config is elsewhere, set `LTI_CONFIG=/path/to/config.php` first. After changing anything in `web/`: `cd web && npm ci && npm run build && cp -r dist/* ../server/public/`.
 
 ## Layout
 - `web/` React + TS + Vite. `npm run build` -> `web/dist` (static files, hash routing, no server rewrite needed for pages).

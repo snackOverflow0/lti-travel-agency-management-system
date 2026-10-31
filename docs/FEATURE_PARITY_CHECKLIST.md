@@ -1,44 +1,36 @@
-# Feature parity checklist — Revision 27 prototype → full-stack
+# Feature parity checklist — Phase 1 frontend restoration
 
-Status key: **Implemented — tested** (automated test passed) · **Schema migrated** (tables exist and migrate cleanly; no API/UI) · **Not built** · **Hosting-dependent** (needs a capability not yet verified on Network Solutions) · **Unsupported at $0** (shown as unavailable, never simulated as real).
+The complete Revision 27 interface is restored inside the full-stack application. **Live** = reads/writes the PHP API and MySQL. **Restored — prototype** = the original Revision 27 screen and behaviour, running on sample data stored in the user’s browser, with a visible label on every such page naming its planned backend phase.
 
-The Revision 27 HTML prototype remains the design and behaviour reference for every module not yet built.
-
-| Feature | Phase | Status |
+| Module | Status | Notes |
 |---|---|---|
-| Staff login / logout / secure sessions | 2 | Implemented — automated tests pass |
-| Password hashing, rate limiting, CSRF, HttpOnly SameSite cookies | 2 | Implemented — automated tests pass |
-| Roles (8) and server-side permissions | 2 | Implemented — automated tests pass (Finance, Advisor, Admin cases) |
-| Account deactivation | 2 | Implemented — automated tests pass |
-| Password reset | 2 | Administrator-assisted one-time link implemented and tested; email delivery pending SMTP verification |
-| Audit log | 2 | Implemented for auth, staff and contacts — tested |
-| Contacts: create, view, edit, soft delete, search, pagination | 3 | Implemented — automated tests pass |
-| Contact record scoping (advisor sees assigned only; direct-ID access blocked) | 3 | Implemented — tested |
-| Duplicate email detection, optimistic concurrency | 3 | Implemented — tested |
-| Leads/lead status, birthdays, anniversaries, passport expiry fields | 3 | Stored and editable — tested for persistence |
-| Staff directory UI | 2 | Implemented — tested (deactivate/reactivate, reset link) |
-| Contact relationships, tags, preferences, loyalty | 3 | Schema migrated; API/UI not built |
-| Contact import/export | 3 | Not built (Rev 27 prototype UI exists) |
-| Trips, statuses, board/list/calendar | 3 | Schema migrated; API/UI not built |
-| Itinerary builder, options, versions, publish | 3 | Schema migrated; API/UI not built |
-| Client portal (traveler accounts, approvals, comments) | 3 | Traveler role exists; portal not built |
-| Group trips, registrations, sub-trip sync | 4 | Schema migrated; not built |
-| Suppliers, bookings | 4 | Schema migrated; not built |
-| Forms and submissions | 4 | Schema migrated; not built |
-| Documents (private storage) | 4 | Schema + protected storage folder; upload API not built |
-| Quotations, invoices, PDF | 5 | Schema migrated; not built |
-| Payment schedules, manual payments (bank transfer/cash), refunds | 5 | Schema migrated; not built — no payment processor by design |
-| Commissions, reconciliation, payouts | 5 | Schema migrated; not built |
-| Tasks | 6 | Schema migrated; not built |
-| Automations, workflows, scheduled jobs (cron) | 6 | Schema migrated; engine not ported — hosting-dependent (cron unverified) |
-| Email (SMTP), templates, scheduled email | 6 | Schema migrated; hosting-dependent (SMTP unverified) |
-| Inbox sync (IMAP) | 6 | Hosting-dependent (IMAP unverified) |
-| Softphone Mode A — browser-to-browser WebRTC | 7 | Schema (calls, signals, presence) migrated; not built; TURN not available at $0 (limitation) |
-| Softphone Mode B — tel: handoff + manual call logging | 7 | Call button on contact detail uses tel: link; call logging not built |
-| Voicemail / call recordings | 7 | Unsupported at $0 without a telephony provider — will be shown as unavailable; recording requires consent/retention policy |
-| Reporting dashboards | 8 | Not built |
-| AI assistant | 8 | Rule-based only (no paid AI); not yet ported |
-| Calendar, appointments, scheduling | 6 | Schema migrated; not built |
-| No emojis; no SaaS pricing/seat features | all | Verified in new app (E2E); none built |
+| Sign-in, sign-out, password reset page | Live (PHP/MySQL) | React screens; real sessions |
+| Role-based navigation and permissions | Live | Real account role drives the Revision 27 navigation and guards; demo role switching disabled |
+| Contacts — database list, search, type filter, pagination | Live | Restored Contacts screen, “Database contacts” tab |
+| Contact create / edit / delete with server validation | Live | Prototype-style dialogs; saved to MySQL; conflict and duplicate checks |
+| Contact detail (database contacts) | Live — partial | Details, edit, delete, phone-app link. Trips, communication, documents, tasks and automations for database contacts arrive in Phases 3–7 |
+| Demo CRM records (full 11-tab profile, relationships, import, duplicates) | Restored — prototype | Second tab of Contacts; browser-local sample data |
+| Staff accounts (list, deactivate, reactivate, reset link) | Live | New Back office › Settings page |
+| Dashboard | Restored — prototype | Figures from sample data; labelled |
+| Trips: board, list, calendar, trip detail (18 sections) | Restored — prototype | Phase 3 |
+| Itinerary editor, versions, publish | Restored — prototype | Phase 3 |
+| Client portal (Primary / Full / Limited) | Restored — prototype | Phase 3; traveler accounts already sign in and are routed to it |
+| Group trips, landing page, registrations, sync | Restored — prototype | Phase 4 |
+| Suppliers, bookings | Restored — prototype | Phase 4 |
+| Forms & intake, documents | Restored — prototype | Phase 4 |
+| Payments, invoices, commission reconciliation, payouts, commission invoices | Restored — prototype | Phase 5 |
+| Tasks, calendar, scheduling | Restored — prototype | Phase 6 |
+| Automations (engine, builder, simulator, demo clock), 20 workflows | Restored — prototype | Phase 6 (needs hosting cron) |
+| Email inbox, Smart inbox, outbox, templates | Restored — prototype | Phase 6 (needs SMTP/IMAP) |
+| Library, content hub, itinerary templates | Restored — prototype | Phases 3–6 |
+| AI workspace (deterministic) | Restored — prototype | Phase 8, rule-based only |
+| Softphone panel, dialer, history, voicemail, recordings, analytics, settings | Restored — prototype (simulated) | Phase 7; free WebRTC + tel: handoff; voicemail/recording unavailable at $0 |
+| Analytics and report builder | Restored — prototype | Phase 8 |
+| Settings, agency details, tags, staff & permissions matrix, integrations, terms, help center | Restored — prototype | Settings stored in the browser until their phase |
 
-**Honest summary:** Phases 0–2 foundations and the contacts slice of Phase 3 are working and tested. Most modules are not yet ported; their database tables exist.
+## Known gaps (honest)
+- Prototype modules use the prototype’s sample clients (Amelia Hartwell, the Shahs, and so on), not database contacts. They are linked in Phase 3.
+- Prototype sample data lives in each browser’s localStorage (fictional data only). Staff sharing a browser see the same sample data; nothing is shared between computers. Database contacts are never copied into browser storage (tested).
+- The live contact detail shows details, edit and delete; the richer CRM tabs exist for demo records only until their phases.
+- “Staff & permissions” (matrix and role previews) is still the prototype page; actual staff management is the live “Staff accounts” page.
+- Creating staff accounts is still done with the CLI or SQL tools from Phase 2 (no UI yet).
