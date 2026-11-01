@@ -26,6 +26,7 @@ final class Worker {
             case 'workflow.scan': return Workflow::scanDates() . ' date-based executions scheduled';
             case 'followup.run': return self::followup((int)$p['followupId']);
             case 'email.send': return self::sendEmail($j, (int)$p['emailId']);
+            case 'callback.remind': return \LTI\Controllers\CallbackController::runReminder((int)$p['callbackId'], (int)$p['rev']);
             default: throw new \RuntimeException('Unknown job type ' . $j['job_type']);
         }
     }

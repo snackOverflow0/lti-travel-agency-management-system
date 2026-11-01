@@ -4,12 +4,12 @@ namespace LTI;
 /** Server-side workflow engine. Definitions are validated against allowlists; no SQL, code or expressions are ever executed. */
 final class Workflow {
     const TRIGGERS = ['contact.created' => 'contact', 'contact.updated' => 'contact', 'trip.created' => 'trip', 'trip.status_changed' => 'trip', 'booking.created' => 'booking', 'booking.status_changed' => 'booking',
-        'invoice.issued' => 'invoice', 'payment.recorded' => 'payment', 'task.completed' => 'task', 'invoice.due_approaching' => 'invoice', 'trip.departure_approaching' => 'trip', 'schedule.date' => null];
+        'invoice.issued' => 'invoice', 'payment.recorded' => 'payment', 'task.completed' => 'task', 'call.logged' => 'call', 'invoice.due_approaching' => 'invoice', 'trip.departure_approaching' => 'trip', 'schedule.date' => null];
     const DATE_TRIGGERS = ['invoice.due_approaching', 'trip.departure_approaching', 'schedule.date'];
-    const TABLES = ['contact' => 'contacts', 'trip' => 'trips', 'booking' => 'bookings', 'invoice' => 'invoices', 'payment' => 'payments', 'task' => 'tasks'];
+    const TABLES = ['contact' => 'contacts', 'trip' => 'trips', 'booking' => 'bookings', 'invoice' => 'invoices', 'payment' => 'payments', 'task' => 'tasks', 'call' => 'calls'];
     const FIELDS = ['contact' => ['contact_type' => 'contact_type', 'lead_status' => 'lead_status', 'source' => 'source'], 'trip' => ['status' => 'status', 'destination' => 'destination', 'trip_type' => 'trip_type', 'currency' => 'currency'],
         'booking' => ['status' => 'status', 'category' => 'booking_type', 'amount' => 'amount', 'currency' => 'currency'], 'invoice' => ['status' => 'status', 'currency' => 'currency', 'total' => 'total', 'balance' => 'balance'],
-        'payment' => ['method' => 'method', 'amount' => 'amount', 'currency' => 'currency'], 'task' => ['priority' => 'priority', 'status' => 'status']];
+        'payment' => ['method' => 'method', 'amount' => 'amount', 'currency' => 'currency'], 'task' => ['priority' => 'priority', 'status' => 'status'], 'call' => ['direction' => 'direction', 'status' => 'status', 'disposition' => 'disposition']];
     const OPS = ['eq', 'neq', 'contains', 'gt', 'gte', 'lt', 'lte', 'in', 'empty', 'not_empty'];
     const ACTIONS = ['create_task', 'notify', 'queue_email', 'update_status', 'schedule_followup', 'timeline'];
     const STATUS_TARGETS = ['trip.status' => ['Inquiry', 'Planning', 'Proposal', 'Approved', 'Booked', 'Traveling', 'Traveled'], 'contact.lead_status' => ['new', 'contacted', 'qualified', 'quoted', 'won', 'lost']];
@@ -107,6 +107,7 @@ final class Workflow {
         if ($type === 'booking') { $l['booking_id'] = (int)$row['id']; $t = Db::one('SELECT id, primary_contact_id, owner_id FROM trips WHERE id=?', [$row['trip_id']]); $l['trip_id'] = (int)$row['trip_id']; $l['contact_id'] = $t && $t['primary_contact_id'] ? (int)$t['primary_contact_id'] : null; $l['owner'] = $row['agent_id'] ? (int)$row['agent_id'] : ($t && $t['owner_id'] ? (int)$t['owner_id'] : null); }
         if ($type === 'invoice' || $type === 'payment') { $inv = $type === 'invoice' ? $row : Db::one('SELECT * FROM invoices WHERE id=?', [$row['invoice_id']]); $l['invoice_id'] = (int)$inv['id']; $l['trip_id'] = $inv['trip_id'] ? (int)$inv['trip_id'] : null; $l['contact_id'] = $inv['contact_id'] ? (int)$inv['contact_id'] : null;
             $t = $l['trip_id'] ? Db::one('SELECT owner_id FROM trips WHERE id=?', [$l['trip_id']]) : null; $l['owner'] = $t && $t['owner_id'] ? (int)$t['owner_id'] : ($inv['created_by'] ? (int)$inv['created_by'] : null); }
+        if ($type === 'call') { foreach (['contact_id', 'trip_id', 'booking_id'] as $k) $l[$k] = $row[$k] ? (int)$row[$k] : null; $l['owner'] = $row['staff_id'] ? (int)$row['staff_id'] : null; }
         if ($type === 'task') { foreach (['contact_id', 'trip_id', 'booking_id', 'invoice_id'] as $k) $l[$k] = $row[$k] ? (int)$row[$k] : null; $l['owner'] = $row['assigned_to'] ? (int)$row['assigned_to'] : null; }
         return $l;
     }
