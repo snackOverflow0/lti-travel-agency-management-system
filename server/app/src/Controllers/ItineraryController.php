@@ -60,6 +60,7 @@ final class ItineraryController {
             $ownDay = array_map('intval', array_column(Db::all('SELECT d.id FROM itinerary_days d JOIN itinerary_options o ON o.id=d.option_id WHERE o.trip_id=?', [$tid]), 'id'));
             $ownAct = array_map('intval', array_column(Db::all('SELECT a.id FROM itinerary_activities a JOIN itinerary_days d ON d.id=a.day_id JOIN itinerary_options o ON o.id=d.option_id WHERE o.trip_id=?', [$tid]), 'id'));
             $keepO = []; $keepD = []; $keepA = []; $nActs = 0;
+            $orig = []; foreach (Db::all('SELECT a.id, a.origin_activity_id, a.activity_type, a.title, a.description, a.start_time, a.location, a.price, a.client_note FROM itinerary_activities a JOIN itinerary_days d ON d.id=a.day_id JOIN itinerary_options o ON o.id=d.option_id WHERE o.trip_id=? AND a.origin_activity_id IS NOT NULL AND a.is_customized=0', [$tid]) as $r) $orig[(int)$r['id']] = $r;
             foreach (array_values($opts) as $oi => $o) {
                 $name = self::str($o['name'] ?? '', 120) ?: 'Option ' . ($oi + 1);
                 $oid = preg_match('/^o(\d+)$/', (string)($o['id'] ?? ''), $m) && in_array((int)$m[1], $ownOpt, true) ? (int)$m[1] : 0;
@@ -83,7 +84,11 @@ final class ItineraryController {
                             'att' => array_values(array_map(function ($x) { return mb_substr((string)$x, 0, 190); }, is_array($a['att'] ?? null) ? $a['att'] : [])), 'f' => is_array($a['f'] ?? null) ? array_map(function ($x) { return mb_substr((string)$x, 0, 190); }, $a['f']) : [], 'img' => $img], JSON_UNESCAPED_UNICODE);
                         $vals = [$did, $type, self::str($a['title'] ?? '', 190) ?: 'Activity', self::str($a['desc'] ?? '', 5000), $time, self::str($a['loc'] ?? '', 190), $price, self::str($a['conf'] ?? '', 60), self::str($a['inote'] ?? '', 5000), self::str($a['cnote'] ?? '', 5000), $det, $ai];
                         $aid = preg_match('/^a(\d+)$/', (string)($a['id'] ?? ''), $m) && in_array((int)$m[1], $ownAct, true) && !in_array((int)$m[1], $keepA, true) ? (int)$m[1] : 0;
-                        if ($aid) Db::exec('UPDATE itinerary_activities SET day_id=?, activity_type=?, title=?, description=?, start_time=?, location=?, price=?, confirmation_number=?, internal_note=?, client_note=?, details_json=?, sort_order=? WHERE id=?', array_merge($vals, [$aid]));
+                        if ($aid) {
+                            Db::exec('UPDATE itinerary_activities SET day_id=?, activity_type=?, title=?, description=?, start_time=?, location=?, price=?, confirmation_number=?, internal_note=?, client_note=?, details_json=?, sort_order=? WHERE id=?', array_merge($vals, [$aid]));
+                            if (isset($orig[$aid])) { $o0 = $orig[$aid]; $changed = $o0['activity_type'] !== $vals[1] || $o0['title'] !== $vals[2] || (string)$o0['description'] !== $vals[3] || (string)$o0['start_time'] !== (string)$vals[4] || (string)$o0['location'] !== $vals[5] || abs((float)($o0['price'] ?? 0) - (float)($vals[6] ?? 0)) > 0.001 || (string)$o0['client_note'] !== $vals[9];
+                                if ($changed) Db::exec('UPDATE itinerary_activities SET is_customized=1 WHERE id=?', [$aid]); }
+                        }
                         else { $aid = Db::insert('INSERT INTO itinerary_activities (day_id, activity_type, title, description, start_time, location, price, confirmation_number, internal_note, client_note, details_json, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', $vals); $map[(string)($a['id'] ?? '')] = 'a' . $aid; }
                         $keepA[] = $aid;
                     }

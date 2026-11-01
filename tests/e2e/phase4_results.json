@@ -1,0 +1,37 @@
+[
+ {
+  "name": "TC10–TC11 Create a supplier in the restored Suppliers screen and edit it; MySQL updated",
+  "ok": true,
+  "detail": "supplier 1; email now groups@sirenuse.example"
+ },
+ {
+  "name": "TC13–TC15 Create a booking for a trip and supplier with a traveler; confirm, edit and cancel in the restored Bookings screen",
+  "ok": true,
+  "detail": "B-00001: created with traveler, confirmed, edited, cancelled|Client moved dates"
+ },
+ {
+  "name": "TC12 Archive the supplier from its profile; the booking keeps its supplier",
+  "ok": true,
+  "detail": "archived; booking still linked"
+ },
+ {
+  "name": "TC21–TC24 Upload, preview, download, refuse other advisor, rename and archive a document in the restored Documents screen",
+  "ok": true,
+  "detail": "doc 1: stored privately, preview, download, other advisor 404, renamed, archived"
+ },
+ {
+  "name": "TC27–TC28 Records survive refresh and sign-out/sign-in; none are written to browser storage",
+  "ok": true,
+  "detail": "present after refresh and re-login (1/11)"
+ },
+ {
+  "name": "TC29 Role restrictions in the restored screens (backend enforced)",
+  "ok": true,
+  "detail": "advisor: New supplier disabled; finance: booking refused in UI; API 403 for finance booking and upload"
+ },
+ {
+  "name": "Mobile 390px: Suppliers, Bookings and Documents usable without horizontal overflow",
+  "ok": true,
+  "detail": "390/390/390"
+ }
+]

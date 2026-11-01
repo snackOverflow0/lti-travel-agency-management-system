@@ -1,0 +1,147 @@
+[
+    [
+        "TC01 Create group trip; MySQL record has group fields",
+        true,
+        "group 3: group|3|2027-11-20|4|Open"
+    ],
+    [
+        "TC02 Edit group; persists; stale version 409; deadline after departure 422",
+        true,
+        "saved; partial update kept dates; 2 rooms"
+    ],
+    [
+        "Group itinerary editable through the itinerary API",
+        true,
+        "3 group activities"
+    ],
+    [
+        "TC03 Register an existing contact: registration, sub-trip, travelers and synced itinerary",
+        true,
+        "registration 1, sub-trip 4 with 3 synced activities"
+    ],
+    [
+        "TC04 Register a new traveler; contact is created and linked",
+        true,
+        "contact 5 created"
+    ],
+    [
+        "TC05 Duplicate active registration is rejected (409)",
+        true,
+        "Already registered for this group: Amelia Hartwell"
+    ],
+    [
+        "TC06 Capacity: over-capacity refused; advisor cannot override; administrator override recorded",
+        true,
+        "refused 409; advisor override 409; admin override flagged; cancellation frees places"
+    ],
+    [
+        "Registration update: change room and add a traveler with checks",
+        true,
+        "duplicate traveler 409; update 200"
+    ],
+    [
+        "TC07 Create a sub-trip manually and associate it with the group",
+        true,
+        "sub-trip 7 with custom dates"
+    ],
+    [
+        "TC08\u2013TC09 Sync group itinerary into sub-trips; custom and edited sub-trip activities are preserved",
+        true,
+        "preview {\"subTripId\":4,\"daysAdded\":1,\"daysRemoved\":0,\"added\":1,\"updated\":1,\"removed\":0,\"customKept\":2}; applied: AmaMagna embarkation > Welcome reception and briefing > Private dinner (custom for Amelia) > Vienna markets walk with a private guide > Melk Abbey"
+    ],
+    [
+        "TC10 Create supplier; MySQL record",
+        true,
+        "supplier 1; duplicate 409; bad category 422"
+    ],
+    [
+        "TC11 Edit supplier; persists; stale version 409",
+        true,
+        "saved"
+    ],
+    [
+        "TC13 Create booking linked to an existing trip and supplier",
+        true,
+        "B-00001|3|1|cruise|pending|3750.00"
+    ],
+    [
+        "TC14 Add traveler to booking; travelers not on the trip are rejected",
+        true,
+        "sub-trip booking with traveler; outsider 422"
+    ],
+    [
+        "TC15 Edit and cancel booking; cancelled booking is read-only; history recorded",
+        true,
+        "confirmed, commission recalculated, cancelled, history booking.created > booking.confirmed"
+    ],
+    [
+        "TC16 Invalid booking relationships are rejected",
+        true,
+        "missing trip 404, missing supplier 422, other advisor trip 404, bad category 422, no trip 422"
+    ],
+    [
+        "TC12 Archive supplier: existing bookings intact; cannot be newly assigned",
+        true,
+        "archived; booking keeps supplier; new assignment 422"
+    ],
+    [
+        "TC17\u2013TC18 Create form; add, edit and reorder fields",
+        true,
+        "order email,first,who,kids,dest"
+    ],
+    [
+        "TC19 Publish form; public submission with required and conditional validation",
+        true,
+        "draft hidden; conditional required enforced; 2 submissions"
+    ],
+    [
+        "TC20 Submissions and answers in MySQL; contact and inquiry trip created; CSV export",
+        true,
+        "2 submissions; contact 8; trip \u201cKenya \u2014 Nora\u201d; CSV ok; finance 403"
+    ],
+    [
+        "Form duplicate and archive; archived form refuses public submissions",
+        true,
+        "copy has 5 fields (draft); archived 404"
+    ],
+    [
+        "TC21 Upload document; metadata in MySQL; file stored outside the web root; bad types rejected",
+        true,
+        "document 1 (69 bytes) stored at app\/storage; .php 415; disguised file 415"
+    ],
+    [
+        "TC22 Authorized download returns the exact file",
+        true,
+        "bytes identical; inline preview as PDF for owner"
+    ],
+    [
+        "TC23 Unauthorized access rejected (other advisor, traveler staff route, no session, direct file URL)",
+        true,
+        "other advisor 404, traveler on staff route 403, anonymous 401, traveler portal (client-visible, own trip) 200, direct URL 404, finance upload 403"
+    ],
+    [
+        "TC24 Rename and archive document; archived file no longer downloadable",
+        true,
+        "renamed, archived, download 404, listed under archived"
+    ],
+    [
+        "TC25 Content library folders: create, rename, move, cycle prevented, non-empty delete refused",
+        true,
+        "ok; finance 403"
+    ],
+    [
+        "TC26 Templates: create, edit, duplicate, archive; use on a trip",
+        true,
+        "activity added to Amalfi day 1; checklist added to packing; search excludes archived copy"
+    ],
+    [
+        "TC29 Backend role enforcement across Phase 4 modules",
+        true,
+        "{\"finance booking\":403,\"sales group\":403,\"advisor supplier\":403,\"sales register\":403,\"advisor2 view group\":404,\"traveler suppliers\":403,\"traveler library\":403,\"ops forms\":403,\"no CSRF\":403}"
+    ],
+    [
+        "Audit log covers Phase 4 actions",
+        true,
+        "all present"
+    ]
+]

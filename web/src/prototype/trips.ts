@@ -173,14 +173,14 @@ async function addTravelerDialog(t: any) {
     });
 }
 /* ---------------- labels & page hooks ---------------- */
-const LATER: Record<string, string> = { Bookings: 'Phase 4', Insurance: 'Phase 4', Documents: 'Phase 4', Forms: 'Phase 4', 'Group trip': 'Phase 4', Payments: 'Phase 5', 'Service fees': 'Phase 5', Emails: 'Phase 6', Tasks: 'Phase 6', Automations: 'Phase 6', Workflows: 'Phase 6', Activity: 'Phase 6 (approvals and comments under Proposal are live)' };
+const LATER: Record<string, string> = { Insurance: 'Phase 5', Payments: 'Phase 5', 'Service fees': 'Phase 5', Emails: 'Phase 6', Tasks: 'Phase 6', Automations: 'Phase 6', Workflows: 'Phase 6', Activity: 'Phase 6 (approvals and comments under Proposal are live)' };
 /** 'live' = no label; string = custom label; null = default prototype label. */
 export function pageNote(): string | null {
   if (X.role === 'Traveler') return 'live';
   if (S.pg === 'trips' || S.pg === 'itinerary') return 'live';
   if (S.pg === 'trip' && isDb(S.cur)) return LATER[S.tsec] ? `This trip is a live database record. The ${S.tsec} section is still prototype sample data and connects in ${LATER[S.tsec]}.` : 'live';
   if (S.pg === 'portal' && isDb(S.cur)) return 'Live preview of the published version stored in the database. Approvals and comments can only be submitted by travelers from their own portal sign-in.';
-  if (S.pg === 'dashboard') return 'Database trips appear in the trip lists here; all other dashboard figures are prototype sample data until their phases connect. Contacts, Staff accounts, Trips, Itineraries and the traveler portal are live.';
+  if (S.pg === 'dashboard') return 'Database trips appear in the trip lists here; all other dashboard figures are prototype sample data until their phases connect. Contacts, Staff accounts, Trips, Itineraries, the traveler portal, Group trips, Suppliers, Bookings, Documents, Forms and the content library (activities, packing lists) are live.';
   return null;
 }
 export function contactTripsCard(contactId: number): string {
@@ -210,7 +210,7 @@ export async function installTrips(user: any, perms: (p: string) => boolean) {
   const origFire = w.fire; w.fire = function (ev: string, rt: string, id: string, o: any) { return isDbAny(id) ? [] : origFire(ev, rt, id, o); };
   const origRecords = w.recordsFor; w.recordsFor = function (a: any) { return origRecords(a).filter((r: any[]) => !isDbAny(r[1])); };
   // page wrappers
-  const pTrips = Pg.trips; Pg.trips = () => withDb(pTrips);
+  const pTrips = Pg.trips; Pg.trips = () => { const all = S.trips; S.trips = all.filter((t: any) => t.db && (t.type || 'standard') === 'standard'); try { return pTrips(); } finally { S.trips = all; } };
   const pItin = Pg.itinerary; Pg.itinerary = () => { if (!isDb(S.cur)) { const f = S.trips.find((t: any) => t.db && t.st !== 'Archived'); if (f) S.cur = f.id; else return hd('Itinerary editor') + emp('plane', 'No database trips yet', 'Create a trip to start an itinerary.', `<button class="btn" onclick="addT()">New trip</button>`); } ensureItin(S.cur); return withDb(pItin); };
   const pTrip = Pg.trip; Pg.trip = () => { if (isDb(S.cur)) ensureItin(S.cur); return pTrip(); };
   const pPortal = Pg.portal; Pg.portal = () => {

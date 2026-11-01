@@ -3,9 +3,12 @@
 // Everything else stays at prototype level with browser-local sample data and a visible label.
 import { api, ApiError, Contact, User, ROLE_LABEL, TYPE_LABEL } from '../api';
 import { installTrips, pageNote, afterDraw, contactTripsCard } from './trips';
+import { installPhase4, afterDraw4, LIVE4 } from './phase4';
+import { installPhase4b, afterDraw4b, note4b } from './phase4b';
+import { installStorageGuard } from './storageGuard';
 const w = window as any;
 const ROLE_MAP: Record<string, string> = { owner: 'Owner', admin: 'Admin', supervisor: 'Supervisor', advisor: 'Advisor', sales: 'Sales', operations: 'Operations', finance: 'Finance', traveler: 'Traveler' };
-const LIVE = new Set(['contacts', 'lcontact', 'staff']);  // trips/itinerary/portal decided by pageNote()
+const LIVE = new Set(['contacts', 'lcontact', 'staff', ...LIVE4]);  // trips/itinerary/portal decided by pageNote()
 const PHASE: Record<string, string> = { tr: 'Phase 3 (trips, itineraries, client portal)', co: 'Phase 4 (forms, documents)', bo: 'Phases 4–5 (suppliers, bookings, finance)', cm: 'Phase 5 (finance)', ta: 'Phase 6 (tasks, calendar)', em: 'Phase 6 (email)', au: 'Phase 6 (automations, workflows)', li: 'Phase 3–6 (content library)', ca: 'Phase 7 (calling)', rp: 'Phase 8 (reporting)', he: 'Phase 8' };
 let me: User;
 const can = (p: string) => me.permissions.includes(p);
@@ -104,13 +107,14 @@ function profileBlock(): string {
 }
 function banner() {
   const m = document.getElementById('m'); if (!m || LIVE.has(S.pg) || X.role === 'Traveler') return;
-  const note = pageNote(); if (note === 'live') return;
+  const n4 = note4b(); const note = n4 !== undefined ? n4 : pageNote(); if (note === 'live') return;
   const s = sec(S.pg); const d = document.createElement('div'); d.className = 'dm proto-note'; d.setAttribute('role', 'note');
   d.textContent = note || `Prototype module — sample data kept in this browser only and not saved to the database. Database connection planned for ${PHASE[s[0]] || 'a later phase'}.`;
   m.prepend(d);
   const bt = m.querySelector('.bnr .bt p'); if (bt) bt.textContent = 'You are signed in with your LTI account. Contacts, Staff accounts, Trips, Itineraries and the traveler portal are live database modules; all other modules still run on prototype sample data in this browser until their backend phase.';
 }
 export async function installAdapter(user: User) {
+  installStorageGuard('lti-proto-r26');
   me = user;
   X.role = ROLE_MAP[user.role] || 'Advisor'; X.phone && (X.phone.open = 0);
   const bo = N.find((n: any) => n[0] === 'bo'); const settings = bo[3][2][1]; if (!settings.some((x: any) => x[0] === 'staff')) settings.splice(1, 0, ['staff', 'Staff accounts']);
@@ -128,11 +132,11 @@ export async function installAdapter(user: User) {
   w.lcPage = (p: number) => { LC.page = p; lcLoad(); };
   w.sfToggle = async (id: number, active: number) => { try { await call('PATCH', '/staff/' + id, { isActive: !!active }); toast(active ? 'Account reactivated' : 'Account deactivated'); sfLoad(); } catch (e) { toast(e instanceof ApiError ? e.message : 'Failed'); } };
   w.sfReset = async (id: number) => { try { const r = await call<{ resetUrl: string }>('POST', `/staff/${id}/reset-link`); dlg('One-time password reset link', `<p>Give this link to the staff member through a trusted channel. It works once and expires in 60 minutes.</p><input readonly aria-label="Reset link" value="${h(r.resetUrl)}" onfocus="this.select()">`, null); } catch (e) { toast(e instanceof ApiError ? e.message : 'Failed'); } };
-  const origDraw = w.draw; w.draw = function () { origDraw(); banner(); afterDraw(); };
+  const origDraw = w.draw; w.draw = function () { origDraw(); banner(); afterDraw(); afterDraw4(); afterDraw4b(); };
   if (location.hash.startsWith('#/') || !location.hash) location.hash = 'dashboard';
   const fromHash = () => { const m = location.hash.match(/^#lcontact-(\d+)$/); if (m) { LD.id = Number(m[1]); LD.err = ''; S.pg = 'lcontact'; return true; } return false; };
   window.addEventListener('hashchange', () => { if (fromHash()) draw(); });
   if (!fromHash()) { const p = location.hash.slice(1); S.pg = Pg[p] ? p : 'dashboard'; }
-  try { await installTrips(user, can); } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
+  try { await installTrips(user, can); await installPhase4(can); await installPhase4b(can, user.id); } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
   w.__LTI_LIVE = true; draw();
 }

@@ -1,4 +1,4 @@
-# LTI Travel Agency Management System — full-stack (Phases 0–3)
+# LTI Travel Agency Management System — full-stack (Phases 0–4, Phase 4 awaiting approval)
 
 Internal software for Luxury Travel Institute. React + TypeScript + Vite frontend (static build) and a plain-PHP REST API on MySQL, designed for the client's existing Network Solutions shared hosting with **$0 additional cost**.
 
@@ -7,6 +7,9 @@ Staff sign-in/out, secure sessions, CSRF, login rate limiting, eight roles with 
 
 ## Phase 1 frontend restoration
 After sign-in, the React shell boots the complete Revision 27 interface (`web/public/prototype/lti-prototype.js`, unchanged code) and `web/src/prototype/adapter.ts` connects it to the API: real role, sign-out, live **Contacts** (database tab), live **Staff accounts**. Every other page shows a “Prototype module” label and runs on browser-local sample data until its backend phase.
+
+## Phase 4 increment 1
+Apply `server/app/migrations/005_phase4.sql` (additive). New APIs: groups, registrations, sub-trips and sync, suppliers, bookings, forms (with public submission), documents (private storage, protected downloads) and the content library. All Phase 4 restored screens are live: Group trips, Suppliers, Bookings, Forms (with a public link page), Documents and the Content library (activities, packing lists). XAMPP: make sure `server/app/storage/documents` is writable by Apache/PHP and check `upload_max_filesize` and `post_max_size` in `php.ini`. See `docs/PHASE4_FEATURE_PARITY.md`, `docs/TEST_RESULTS.md`, `docs/PHASE4_SCHEMA_AND_SECURITY.md`, `docs/GITHUB_PHASE4_INSTRUCTIONS.md`.
 
 ## Phase 3 (trips, travelers, itineraries, client portal)
 Trips, trip travelers, itineraries and the traveler portal now use MySQL through the API. Apply migration `004_phase3.sql` (additive; no existing data changes). See `docs/PHASE3_COMPLETION_CHECKLIST.md`, `docs/API_PHASE3.md`, `docs/TEST_RESULTS.md`.

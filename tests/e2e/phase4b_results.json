@@ -1,0 +1,47 @@
+[
+ {
+  "name": "TC01–TC02 Create a group trip, edit details, landing page and room categories in the restored Group trips screen",
+  "ok": true,
+  "detail": "group 3: details, landing headline and room category saved"
+ },
+ {
+  "name": "TC03–TC06 Register existing and new travelers; duplicate and capacity rules; administrator override; cancellation",
+  "ok": true,
+  "detail": "existing + new traveler registered; duplicate and capacity refused; override recorded; cancellation released places"
+ },
+ {
+  "name": "TC07–TC09 Create a sub-trip; sync the group itinerary; custom sub-trip activity preserved",
+  "ok": true,
+  "detail": "preview showed 1 to add; after sync: Vienna markets walk>Private dinner for Amelia"
+ },
+ {
+  "name": "TC17–TC18 Create a form; rename; add, edit, require and reorder fields in the restored builder",
+  "ok": true,
+  "detail": "form 1: First name:1,Cabin preference:1,Email:1"
+ },
+ {
+  "name": "TC19–TC20 Publish; public link submission without sign-in; response stored, linked to a trip, exported; duplicate and archive",
+  "ok": true,
+  "detail": "public submission 1 stored with answers and contact; linked to trip; CSV; duplicate; archive"
+ },
+ {
+  "name": "TC25–TC26 Content library: folders, activity templates (create, edit, duplicate, move), use on a trip; packing list",
+  "ok": true,
+  "detail": "folder created/renamed; template created in folder, edited and moved, duplicated, added to Amalfi day 1; packing list item saved"
+ },
+ {
+  "name": "TC27–TC28 Groups, forms and library survive refresh and sign-out/sign-in; nothing written to browser storage",
+  "ok": true,
+  "detail": "present after refresh and re-login"
+ },
+ {
+  "name": "TC29 Roles: sales cannot create groups; another advisor cannot see the group; finance has no forms access",
+  "ok": true,
+  "detail": "sales blocked; advisor2 does not see the group; finance forms 403"
+ },
+ {
+  "name": "Mobile 390px: Group trips, Forms and Content library without horizontal overflow",
+  "ok": true,
+  "detail": "390/390/390"
+ }
+]

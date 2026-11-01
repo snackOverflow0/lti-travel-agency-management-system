@@ -4,6 +4,7 @@ export class ApiError extends Error {
 }
 let csrf = '';
 export const setCsrf = (t: string) => { csrf = t; };
+export const getCsrf = () => csrf;
 export async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch('./api' + path, {
     method, credentials: 'same-origin',

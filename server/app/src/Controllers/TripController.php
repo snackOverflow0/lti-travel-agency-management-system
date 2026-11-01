@@ -3,17 +3,18 @@ declare(strict_types=1);
 namespace LTI\Controllers;
 use LTI\{Auth, Audit, Db, Http, HttpError, Validate};
 final class TripController {
-    const STATUSES = ['Inquiry', 'Planning', 'Proposal', 'Approved', 'Booked', 'Traveling', 'Traveled', 'Cancelled', 'Archived'];
+    const STATUSES = ['Inquiry', 'Planning', 'Proposal', 'Approved', 'Booked', 'Traveling', 'Traveled', 'Cancelled', 'Archived', 'Open', 'Closed'];
     const PERMS = ['primary', 'full', 'limited'];
     /** Row scope: trips.view_all sees all trips; others see trips they own, created or collaborate on. */
     public static function scope(array $u): array {
         if (in_array('trips.view_all', $u['permissions'], true)) return ['1=1', []];
         $id = (int)$u['id'];
-        return ['(t.owner_id = ? OR t.created_by = ? OR EXISTS (SELECT 1 FROM trip_collaborators tc WHERE tc.trip_id = t.id AND tc.user_id = ?))', [$id, $id, $id]];
+        return ['(t.owner_id = ? OR t.created_by = ? OR t.coordinator_id = ? OR EXISTS (SELECT 1 FROM trip_collaborators tc WHERE tc.trip_id = t.id AND tc.user_id = ?)'
+            . ' OR EXISTS (SELECT 1 FROM trips g WHERE g.id = t.parent_trip_id AND (g.owner_id = ? OR g.coordinator_id = ? OR g.created_by = ?)))', [$id, $id, $id, $id, $id, $id, $id]];
     }
     public static function findRow(array $u, int $id): array {
         [$w, $p] = self::scope($u);
-        $r = Db::one("SELECT t.*, o.full_name owner_name, CONCAT_WS(' ', c.first_name, c.last_name) contact_name FROM trips t LEFT JOIN users o ON o.id=t.owner_id LEFT JOIN contacts c ON c.id=t.primary_contact_id AND c.deleted_at IS NULL WHERE t.id=? AND t.deleted_at IS NULL AND t.trip_type='standard' AND $w", array_merge([$id], $p));
+        $r = Db::one("SELECT t.*, o.full_name owner_name, CONCAT_WS(' ', c.first_name, c.last_name) contact_name FROM trips t LEFT JOIN users o ON o.id=t.owner_id LEFT JOIN contacts c ON c.id=t.primary_contact_id AND c.deleted_at IS NULL WHERE t.id=? AND t.deleted_at IS NULL AND $w", array_merge([$id], $p));
         if (!$r) throw new HttpError(404, 'Trip not found');
         return $r;
     }
@@ -21,7 +22,7 @@ final class TripController {
         return ['id' => (int)$r['id'], 'name' => $r['name'], 'status' => $r['status'], 'destination' => $r['destination'], 'startDate' => $r['start_date'], 'endDate' => $r['end_date'],
             'ownerId' => $r['owner_id'] === null ? null : (int)$r['owner_id'], 'ownerName' => $r['owner_name'] ?? null, 'primaryContactId' => $r['primary_contact_id'] === null ? null : (int)$r['primary_contact_id'],
             'primaryContactName' => $r['contact_name'] ?? null, 'notes' => $r['notes'], 'tags' => $r['tags_json'] ? json_decode($r['tags_json'], true) : [],
-            'isPublished' => (bool)$r['is_published'], 'archivedAt' => $r['archived_at'], 'version' => (int)$r['version'], 'createdAt' => $r['created_at'], 'updatedAt' => $r['updated_at']];
+            'isPublished' => (bool)$r['is_published'], 'tripType' => $r['trip_type'], 'parentTripId' => $r['parent_trip_id'] === null ? null : (int)$r['parent_trip_id'], 'archivedAt' => $r['archived_at'], 'version' => (int)$r['version'], 'createdAt' => $r['created_at'], 'updatedAt' => $r['updated_at']];
     }
     private static function detail(int $id, array $u): array {
         $t = self::out(self::findRow($u, $id));
@@ -33,7 +34,8 @@ final class TripController {
     }
     public static function list(): array {
         $u = Auth::require('trips.view'); [$w, $p] = self::scope($u);
-        $where = ['t.deleted_at IS NULL', "t.trip_type='standard'", $w];
+        $type = (string)($_GET['type'] ?? 'standard'); Validate::enum(['t' => $type], 't', ['standard', 'sub', 'group', 'all']);
+        $where = ['t.deleted_at IS NULL', $w]; if ($type !== 'all') { $where[] = 't.trip_type=?'; $p[] = $type; }
         $arch = (string)($_GET['archived'] ?? '0');
         if ($arch === '0') $where[] = 't.archived_at IS NULL'; elseif ($arch === '1') $where[] = 't.archived_at IS NOT NULL';
         if (($st = (string)($_GET['status'] ?? '')) !== '') { Validate::enum(['s' => $st], 's', self::STATUSES); $where[] = 't.status=?'; $p[] = $st; }
@@ -57,6 +59,7 @@ final class TripController {
     }
     public static function get(array $pa): array { $u = Auth::require('trips.view'); return ['trip' => self::detail((int)$pa['id'], $u)]; }
     private static function fields(array $d, array $u, ?array $cur): array {
+        if ($cur) $d = array_merge(['name' => $cur['name'], 'destination' => $cur['destination'], 'startDate' => $cur['start_date'], 'endDate' => $cur['end_date'], 'status' => $cur['status'], 'notes' => $cur['notes']], $d);
         $f = ['name' => Validate::str($d, 'name', 190, $cur === null), 'destination' => Validate::str($d, 'destination', 190), 'start_date' => Validate::date($d, 'startDate'), 'end_date' => Validate::date($d, 'endDate'),
             'status' => Validate::enum($d, 'status', self::STATUSES, $cur ? $cur['status'] : 'Inquiry'), 'notes' => Validate::str($d, 'notes', 5000)];
         if ($cur !== null && $f['name'] === null) $f['name'] = $cur['name'];

@@ -42,3 +42,6 @@ Rule: **$0 new recurring or usage-based cost.** Free trials, free tiers that con
 Twilio, Vonage, paid SIP trunks and phone numbers; SMS gateways; SendGrid/Mailgun/other paid or metered email APIs; Stripe/PayPal/Square processing (transaction fees); OpenAI, Anthropic, Gemini or any metered AI API; AWS/GCP/Azure storage or databases; Firebase/Supabase pay-as-you-go; paid TURN; any "free trial" service.
 
 **Total new monthly cost of the current build: $0.** No paid service is configured or called anywhere in the code.
+
+## Phase 4 additions
+No new libraries, services or accounts. File storage uses the hosting account’s disk; the PHP `fileinfo` extension (bundled with PHP, normally enabled) is now required for upload validation and must be confirmed in Phase 0. Upload sizes are also limited by the host’s `upload_max_filesize` and `post_max_size` (unverified). **New monthly cost: $0.**
