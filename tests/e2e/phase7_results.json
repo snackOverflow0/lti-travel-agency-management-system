@@ -1,0 +1,37 @@
+[
+ {
+  "name": "TC01–TC05, TC26 Open restored softphone; dial pad; contact match; unknown number; unavailable controls disabled",
+  "ok": true,
+  "detail": "panel opened in External dialing / Manual logging mode; keypad entry; Shah matched; unknown number handled; 5 live controls disabled"
+ },
+ {
+  "name": "TC06–TC07 Phone-app handoff creates an attempt only: no connected state, no timer; outcome recorded by staff",
+  "ok": true,
+  "detail": "tel:+15125550177 handed to the launcher (device handler itself not automatable headless); attempt stored as attempted|handoff_unconfirmed|null|2; panel static; outcome connected|120|entered|user_entered"
+ },
+ {
+  "name": "TC08–TC11 Log a call from the panel (inbound missed, disposition, notes); verified in MySQL",
+  "ok": true,
+  "detail": "missed|2|null|callback_requested|Left no message"
+ },
+ {
+  "name": "TC12, TC19, TC21 History from MySQL survives refresh; direction filter; search",
+  "ok": true,
+  "detail": "2 rows from MySQL before and after refresh; inbound filter; search"
+ },
+ {
+  "name": "TC15, TC18 Schedule a callback from call details; task created; contact timeline shows call events",
+  "ok": true,
+  "detail": "pending|Call back Daniel Shah|Callback; timeline: callback.scheduled, call.logged"
+ },
+ {
+  "name": "Analytics and voicemail pages are honest about data sources",
+  "ok": true,
+  "detail": "analytics: verified 0, unverified note; voicemail unavailable; 11 dispositions listed"
+ },
+ {
+  "name": "Mobile 390px: softphone panel fits; no emojis anywhere in phone screens",
+  "ok": true,
+  "detail": "fits; clean"
+ }
+]

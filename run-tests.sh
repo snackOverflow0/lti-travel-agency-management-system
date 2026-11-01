@@ -10,6 +10,8 @@ CFG="$PWD/server/app/config/config.test.php"
 ./dev-up.sh >/dev/null 2>&1; LTI_CONFIG=$CFG php server/tests/api_phase4_test.php http://127.0.0.1:8000 > test-output/api_phase4.log 2>&1
 ./dev-up.sh >/dev/null 2>&1; LTI_CONFIG=$CFG php server/tests/api_phase5_test.php http://127.0.0.1:8000 > test-output/api_phase5.log 2>&1
 ./dev-up.sh >/dev/null 2>&1; LTI_CONFIG=$CFG php server/tests/api_phase6_test.php http://127.0.0.1:8000 > test-output/api_phase6.log 2>&1
+./dev-up.sh >/dev/null 2>&1; LTI_CONFIG=$CFG php server/tests/api_phase7_test.php http://127.0.0.1:8000 > test-output/api_phase7.log 2>&1
+./dev-up.sh >/dev/null 2>&1; node tests/e2e/phase7.spec.js > test-output/e2e_phase7.log 2>&1
 for i in 1 2 3; do ./dev-up.sh >/dev/null 2>&1; node tests/e2e/phase4.spec.js > test-output/e2e_phase4_run$i.log 2>&1; done; cp test-output/e2e_phase4_run3.log test-output/e2e_phase4.log
 ./dev-up.sh >/dev/null 2>&1; node tests/e2e/phase4b.spec.js > test-output/e2e_phase4b.log 2>&1
 ./dev-up.sh >/dev/null 2>&1; node tests/e2e/phase3.spec.js > test-output/e2e_phase3.log 2>&1

@@ -12,7 +12,7 @@
     [
         "Owner signs in; \/auth\/me returns role and permissions",
         true,
-        "42 permissions"
+        "44 permissions"
     ],
     [
         "State-changing request without CSRF token is rejected (403)",

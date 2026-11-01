@@ -1,0 +1,107 @@
+[
+    [
+        "Calling capability: only external dialing and manual logging; PSTN, provider and WebRTC unavailable",
+        true,
+        "available: external_dialing, manual_logging; PSTN unavailable"
+    ],
+    [
+        "Phone normalisation is conservative and country-aware",
+        true,
+        "9 cases incl. US, UK, Philippines, Italy, 011 prefix; short, unknown-code and invalid-area numbers rejected"
+    ],
+    [
+        "TC03\u2013TC05 Contact match by stored number; unknown number; hidden contacts never revealed",
+        true,
+        "Shah matched from 512.555.0177; unknown number normalised, no match; Okafor (another advisor\u2019s client) not revealed to advisor, visible to advisor2"
+    ],
+    [
+        "Multiple numbers per contact, preferred number, duplicates among visible contacts",
+        true,
+        "2 numbers (preferred first); duplicate 409; UK national format matched; invalid 422"
+    ],
+    [
+        "TC06\u2013TC07 Phone-app handoff records an attempt only: not connected, no duration",
+        true,
+        "tel:+15125550177; stored as external_handoff|handoff_unconfirmed|attempted|null|unknown; no call.logged event"
+    ],
+    [
+        "Handoff outcome entered by staff (no invented duration); cannot be recorded twice",
+        true,
+        "duration on unanswered call 422; outcome no_answer, duration null; second outcome 409"
+    ],
+    [
+        "TC08\u2013TC11 Manual outbound and inbound logs with notes and disposition; verified in MySQL",
+        true,
+        "outbound: manual_log|user_entered|outbound|connected|+15125550177|2|1|754|entered|interested; inbound missed from unknown number: inbound|missed|+16465550100|none|null; invalid combinations 422"
+    ],
+    [
+        "TC13\u2013TC14 Link call to contact and trip by editing; edit history kept",
+        true,
+        "linked to Shah + Amalfi; linking a hidden contact 404; edit recorded"
+    ],
+    [
+        "Notes: add, author edits; others cannot edit",
+        true,
+        "note added and edited by author (history kept); sales 403"
+    ],
+    [
+        "Dispositions are configurable by administrators and audited",
+        true,
+        "11 seeded + 1 added; edited\/deactivated; advisor 403; 2 audit entries"
+    ],
+    [
+        "TC15\u2013TC17 Callback: task created, reminder queued, reschedule moves task and reminder, completion completes task",
+        true,
+        "task \u201cCall back Daniel Shah\u201d + reminder; reschedule moved due date and replaced reminder; completion closed task, cancelled reminder"
+    ],
+    [
+        "Callback reminder delivered by the real worker when due; overdue filter",
+        true,
+        "listed as overdue; worker delivered one reminder notification"
+    ],
+    [
+        "TC18 Call activity appears on the contact and trip timelines",
+        true,
+        "contact and trip timelines include call events, e.g. \u201cOutbound call connected \u00b7 Interested \u00b7 12:34 (entered)\u201d"
+    ],
+    [
+        "TC19\u2013TC21 History filters: direction, staff, missed, follow-up, search by phone and contact, sort",
+        true,
+        "inbound only; by staff; missed; follow-up (disposition requires follow-up); search 6465550100 -> 1; search Shah; ascending sort"
+    ],
+    [
+        "TC22 Reporting totals equal MySQL counts and are labelled as unverified",
+        true,
+        "records 3, entered duration 754s, outbound 2, verified 0, callbacks completed 1 \u2014 all match SQL"
+    ],
+    [
+        "Call export (CSV) respects scope",
+        true,
+        "advisor CSV with verification labels; advisor2 export contains header only (no calls visible)"
+    ],
+    [
+        "TC23\u2013TC24 Unauthorized access refused; restricted contact data stays protected",
+        true,
+        "{\"advisor2 get\":404,\"advisor2 edit\":404,\"finance calls\":403,\"traveler\":403,\"sales edit others\":403,\"callback hidden contact\":404,\"own call, contact reassigned\":\"Restricted record\"}"
+    ],
+    [
+        "TC25 Call logs persist across logout and a new login",
+        true,
+        "records, duration and notes re-read in a new session"
+    ],
+    [
+        "TC27 No fictional durations: only staff-entered durations exist and none on unanswered calls",
+        true,
+        "no measured durations, none on unanswered or pending-handoff calls"
+    ],
+    [
+        "TC35 Every record carries an accurate source and verification label",
+        true,
+        "external_handoff\/user_entered, manual_log\/user_entered; none labelled verified"
+    ],
+    [
+        "Workflow trigger \u201ccall logged\u201d runs from real call events",
+        true,
+        "missed inbound call created a follow-up task through the workflow engine"
+    ]
+]
