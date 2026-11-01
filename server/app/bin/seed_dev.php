@@ -30,4 +30,5 @@ if (!Db::one("SELECT id FROM trips WHERE name='Amalfi Coast Anniversary'")) {
   $mk('Amalfi Coast Anniversary', 'Amalfi Coast, Italy', '2026-12-03', '2026-12-11', $tr('advisor@lti.test'), $shah, 'Proposal', [['Arrive in Naples', [['transfer', 'Private transfer to Positano', 'INTERNAL: driver tip included'], ['hotel', 'Le Sirenuse, 4 nights', 'INTERNAL: net rate 2,700 EUR']]], ['Anniversary day', [['excursion', 'Private boat to Capri', 'INTERNAL: surprise cake arranged']]]]);
   $mk('Kenya Family Safari', 'Masai Mara, Kenya', '2027-01-09', '2027-01-20', $tr('advisor2@lti.test'), $okafor, 'Planning', [['Arrive Nairobi', [['flight', 'Arrival into NBO', 'INTERNAL: check visas']]]]);
 }
+foreach (Db::all("SELECT id, phone FROM contacts WHERE phone IS NOT NULL") as $r) \LTI\Phone::syncContactField((int)$r['id'], $r['phone']);
 echo "Seeded dev staff (password: Dev-Password-2026) and sample contacts\n";
