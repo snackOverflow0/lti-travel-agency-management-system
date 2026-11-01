@@ -4,7 +4,7 @@ declare(strict_types=1);
 $appDir = getenv('LTI_APP_DIR') ?: dirname(__DIR__, 2) . '/app';
 require $appDir . '/bootstrap.php';
 use LTI\{Http, HttpError, Idempotency, Router, Session};
-use LTI\Controllers\{AuthController, BookingController, ContactController, DocumentController, FormController, GroupController, ItineraryController, LibraryController, PortalController, StaffController, SupplierController, TripController, QuoteController, InvoiceController, PaymentController, PayableController, CommissionController, FinanceController, TaskController, EmailTemplateController, EmailController, OpsController, WorkflowController};
+use LTI\Controllers\{AuthController, BookingController, ContactController, DocumentController, FormController, GroupController, ItineraryController, LibraryController, PortalController, StaffController, SupplierController, TripController, QuoteController, InvoiceController, PaymentController, PayableController, CommissionController, FinanceController, TaskController, EmailTemplateController, EmailController, OpsController, WorkflowController, CallController, CallbackController};
 $dev = ($GLOBALS['LTI_CFG']['env'] ?? 'production') === 'development';
 try {
     Session::start();
@@ -204,12 +204,37 @@ try {
     $r->add('POST', '/jobs/{id}/retry', function ($p) { return OpsController::retryJob($p); });
     $r->add('POST', '/jobs/{id}/cancel', function ($p) { return OpsController::cancelJob($p); });
     $r->add('POST', '/cron/run', function ($p) { return OpsController::cronRun(); });
+    $r->add('GET', '/calls/capability', function ($p) { return CallController::capability(); });
+    $r->add('GET', '/calls/report', function ($p) { return CallController::report(); });
+    $r->add('GET', '/calls/export', function ($p) { return CallController::export(); });
+    $r->add('GET', '/calls', function ($p) { return CallController::list(); });
+    $r->add('POST', '/calls', function ($p) { return CallController::create(); });
+    $r->add('POST', '/calls/handoff', function ($p) { return CallController::handoff(); });
+    $r->add('GET', '/calls/{id}', function ($p) { return CallController::get($p); });
+    $r->add('PUT', '/calls/{id}', function ($p) { return CallController::update($p); });
+    $r->add('POST', '/calls/{id}/outcome', function ($p) { return CallController::outcome($p); });
+    $r->add('POST', '/calls/{id}/archive', function ($p) { return CallController::archive($p); });
+    $r->add('POST', '/calls/{id}/notes', function ($p) { return CallController::addNote($p); });
+    $r->add('PUT', '/call-notes/{id}', function ($p) { return CallController::editNote($p); });
+    $r->add('GET', '/call-dispositions', function ($p) { return CallController::dispositions(); });
+    $r->add('POST', '/call-dispositions', function ($p) { return CallController::saveDisposition(); });
+    $r->add('PUT', '/call-dispositions/{id}', function ($p) { return CallController::saveDisposition($p); });
+    $r->add('GET', '/phone/lookup', function ($p) { return CallController::lookup(); });
+    $r->add('POST', '/phone/backfill', function ($p) { return CallController::backfillPhones(); });
+    $r->add('GET', '/contacts/{id}/phones', function ($p) { return CallController::contactPhones($p); });
+    $r->add('POST', '/contacts/{id}/phones', function ($p) { return CallController::addPhone($p); });
+    $r->add('DELETE', '/contacts/{id}/phones/{pid}', function ($p) { return CallController::deletePhone($p); });
+    $r->add('GET', '/callbacks', function ($p) { return CallbackController::list(); });
+    $r->add('POST', '/callbacks', function ($p) { return CallbackController::create(); });
+    $r->add('POST', '/callbacks/{id}/reschedule', function ($p) { return CallbackController::reschedule($p); });
+    $r->add('POST', '/callbacks/{id}/complete', function ($p) { return CallbackController::setStatus($p, 'completed'); });
+    $r->add('POST', '/callbacks/{id}/cancel', function ($p) { return CallbackController::setStatus($p, 'cancelled'); });
     $r->add('GET', '/health', function () { return ['ok' => true]; });
     $replayCode = null;
     if ($method === 'POST') { [$out, $replayCode] = Idempotency::run($path, function () use ($r, $method, $path) { return $r->dispatch($method, $path); }); }
     else $out = $r->dispatch($method, $path);
     if ($replayCode !== null) header('Idempotent-Replay: true');
-    Http::json($out, $replayCode !== null ? 200 : (($method === 'POST' && in_array($path, ['/contacts', '/trips', '/groups', '/suppliers', '/bookings', '/forms', '/documents', '/library/folders', '/library/templates', '/quotes', '/invoices', '/payments', '/payables', '/commission-rules', '/finance/rates', '/finance/tax-rates', '/tasks', '/email-templates', '/emails', '/workflows', '/followups'], true)) ? 201 : 200));
+    Http::json($out, $replayCode !== null ? 200 : (($method === 'POST' && in_array($path, ['/contacts', '/trips', '/groups', '/suppliers', '/bookings', '/forms', '/documents', '/library/folders', '/library/templates', '/quotes', '/invoices', '/payments', '/payables', '/commission-rules', '/finance/rates', '/finance/tax-rates', '/tasks', '/email-templates', '/emails', '/workflows', '/followups', '/calls', '/callbacks'], true)) ? 201 : 200));
 } catch (HttpError $e) {
     Http::json(['error' => $e->getMessage(), 'fields' => (object)$e->fields], $e->getCode());
 } catch (Throwable $e) {

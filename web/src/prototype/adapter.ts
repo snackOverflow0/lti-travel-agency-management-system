@@ -6,9 +6,10 @@ import { installTrips, pageNote, afterDraw, contactTripsCard } from './trips';
 import { installPhase4, afterDraw4, LIVE4 } from './phase4';
 import { installPhase4b, afterDraw4b, note4b } from './phase4b';
 import { installStorageGuard } from './storageGuard';
+import { installPhone, LIVE_PHONE } from './phone';
 const w = window as any;
 const ROLE_MAP: Record<string, string> = { owner: 'Owner', admin: 'Admin', supervisor: 'Supervisor', advisor: 'Advisor', sales: 'Sales', operations: 'Operations', finance: 'Finance', traveler: 'Traveler' };
-const LIVE = new Set(['contacts', 'lcontact', 'staff', ...LIVE4]);  // trips/itinerary/portal decided by pageNote()
+const LIVE = new Set(['contacts', 'lcontact', 'staff', ...LIVE4, ...LIVE_PHONE]);  // trips/itinerary/portal decided by pageNote()
 const PHASE: Record<string, string> = { tr: 'Phase 3 (trips, itineraries, client portal)', co: 'Phase 4 (forms, documents)', bo: 'Phases 4–5 (suppliers, bookings, finance)', cm: 'Phase 5 (finance)', ta: 'Phase 6 (tasks, calendar)', em: 'Phase 6 (email)', au: 'Phase 6 (automations, workflows)', li: 'Phase 3–6 (content library)', ca: 'Phase 7 (calling)', rp: 'Phase 8 (reporting)', he: 'Phase 8' };
 let me: User;
 const can = (p: string) => me.permissions.includes(p);
@@ -137,6 +138,6 @@ export async function installAdapter(user: User) {
   const fromHash = () => { const m = location.hash.match(/^#lcontact-(\d+)$/); if (m) { LD.id = Number(m[1]); LD.err = ''; S.pg = 'lcontact'; return true; } return false; };
   window.addEventListener('hashchange', () => { if (fromHash()) draw(); });
   if (!fromHash()) { const p = location.hash.slice(1); S.pg = Pg[p] ? p : 'dashboard'; }
-  try { await installTrips(user, can); await installPhase4(can); await installPhase4b(can, user.id); } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
+  try { await installTrips(user, can); await installPhase4(can); await installPhase4b(can, user.id); await installPhone(can); } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
   w.__LTI_LIVE = true; draw();
 }
