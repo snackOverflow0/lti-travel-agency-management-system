@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace LTI\Controllers;
-use LTI\{Auth, Audit, Db, Http, HttpError, Validate};
+use LTI\{Auth, Audit, Db, Http, HttpError, Validate, Events};
 /** Files live outside the web root; MySQL holds metadata only. Every download goes through PHP permission checks. */
 final class DocumentController {
     const ALLOWED = ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png'], 'gif' => ['image/gif'], 'webp' => ['image/webp'],
@@ -69,6 +69,7 @@ final class DocumentController {
         $id = Db::insert('INSERT INTO documents (original_name, title, stored_name, mime_type, size_bytes, sha256, category, visibility, trip_id, contact_id, booking_id, supplier_id, uploaded_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())',
             [$orig, Validate::str($src, 'title', 255) ?: $orig, $sub . '/' . $stored, $mime, (int)$f['size'], hash_file('sha256', $dir . '/' . $stored), $cat, $vis, $links['trip_id'], $links['contact_id'], $links['booking_id'], $links['supplier_id'], (int)$u['id']]);
         Audit::log((int)$u['id'], 'document.uploaded', 'document', $id, ['name' => $orig, 'size' => (int)$f['size']]);
+        foreach (['trip_id' => 'trip', 'contact_id' => 'contact', 'booking_id' => 'booking'] as $c => $t) if ($links[$c]) Events::activity($t, (int)$links[$c], 'document.uploaded', (int)$u['id'], 'Document uploaded: ' . mb_substr($orig, 0, 150));
         return ['document' => self::out(self::find($u, $id))];
     }
     public static function update(array $pa): array {

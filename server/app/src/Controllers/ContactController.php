@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 namespace LTI\Controllers;
-use LTI\{Auth, Audit, Db, Http, HttpError, Validate};
+use LTI\{Auth, Audit, Db, Http, HttpError, Validate, Events};
 final class ContactController {
     const TYPES = ['client', 'lead', 'traveler', 'supplier_contact'];
     const LEAD = ['new', 'contacted', 'qualified', 'quoted', 'won', 'lost'];
     /** Row-level scope: contacts.view_all sees everything; others only contacts assigned to or created by them. */
-    private static function scope(array $u): array {
+    public static function scope(array $u): array {
         if (in_array('contacts.view_all', $u['permissions'], true)) return ['1=1', []];
         return ['(c.assigned_to = ? OR c.created_by = ?)', [(int)$u['id'], (int)$u['id']]];
     }
@@ -61,6 +61,7 @@ final class ContactController {
             $cols = array_keys($f);
             $id = Db::insert('INSERT INTO contacts (' . implode(',', $cols) . ', assigned_to, created_by, created_at, updated_at, version) VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ',?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),1)', array_merge(array_values($f), [$assigned, (int)$u['id']]));
             Audit::log((int)$u['id'], 'contact.created', 'contact', $id, ['name' => trim($f['first_name'] . ' ' . ($f['last_name'] ?? ''))]);
+            Events::emit('contact.created', 'contact', $id, (int)$u['id'], 'Contact created');
             return $id;
         });
         return ['contact' => self::out(self::find($u, $id))];
@@ -73,6 +74,7 @@ final class ContactController {
         Db::exec("UPDATE contacts SET $sets, assigned_to=?, updated_at=UTC_TIMESTAMP(), version=version+1 WHERE id=?", array_merge(array_values($f), [$assigned, (int)$cur['id']]));
         $changed = array_keys(array_filter($f, function ($v, $k) use ($cur) { return (string)$v !== (string)$cur[$k]; }, ARRAY_FILTER_USE_BOTH));
         Audit::log((int)$u['id'], 'contact.updated', 'contact', $cur['id'], ['fields' => $changed]);
+        if ($changed) Events::emit('contact.updated', 'contact', (int)$cur['id'], (int)$u['id'], 'Contact updated: ' . implode(', ', $changed), ['fields' => $changed]);
         return ['contact' => self::out(self::find($u, (int)$cur['id']))];
     }
     public static function delete(array $pa): array {

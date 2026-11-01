@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace LTI\Controllers;
-use LTI\{Auth, Audit, Db, Http, HttpError, Validate};
+use LTI\{Auth, Audit, Db, Http, HttpError, Validate, Events};
 /** Bookings record supplier reservations for a trip. Amounts are stored for Phase 5; no payment processing happens here. */
 final class BookingController {
     const CATEGORIES = ['accommodation', 'flight', 'cruise', 'transfer', 'activity', 'tour', 'dining', 'insurance', 'other'];
@@ -50,7 +50,7 @@ final class BookingController {
         $supId = array_key_exists('supplierId', $d) ? ($d['supplierId'] === null || $d['supplierId'] === '' ? null : (int)$d['supplierId']) : ($cur && $cur['supplier_id'] !== null ? (int)$cur['supplier_id'] : null);
         if ($supId !== null) { $s = Db::one('SELECT id, status FROM suppliers WHERE id=?', [$supId]); if (!$s) throw new HttpError(422, Validate::MSG, ['supplierId' => 'Unknown supplier']);
             if ($s['status'] === 'archived' && (!$cur || (int)$cur['supplier_id'] !== $supId)) throw new HttpError(422, Validate::MSG, ['supplierId' => 'This supplier is archived']); }
-        $f = ['trip_id' => (int)$trip['id'], 'supplier_id' => $supId, 'booking_type' => Validate::enum($d, 'category', self::CATEGORIES, $cur ? $cur['booking_type'] : null),
+        $f = ['trip_id' => (int)$trip['id'], 'currency' => $cur ? $cur['currency'] : ($trip['currency'] ?? 'USD'), 'supplier_id' => $supId, 'booking_type' => Validate::enum($d, 'category', self::CATEGORIES, $cur ? $cur['booking_type'] : null),
             'status' => Validate::enum($d, 'status', ['pending', 'confirmed'], $cur ? ($cur['status'] === 'cancelled' ? 'cancelled' : $cur['status']) : 'pending'),
             'confirmation_number' => Validate::str($d, 'confirmationNumber', 60), 'confirmation_details' => Validate::str($d, 'confirmationDetails', 5000), 'travel_date' => Validate::date($d, 'startDate'), 'end_date' => Validate::date($d, 'endDate'),
             'notes' => Validate::str($d, 'notes', 5000)];
@@ -81,6 +81,7 @@ final class BookingController {
             Db::exec('UPDATE bookings SET reference=? WHERE id=?', ['B-' . str_pad((string)$id, 5, '0', STR_PAD_LEFT), $id]);
             if (isset($d['travelerIds']) && is_array($d['travelerIds'])) self::setTravelersFor($id, $f['trip_id'], $d['travelerIds']);
             Audit::log((int)$u['id'], 'booking.created', 'booking', $id, ['trip' => $f['trip_id'], 'supplier' => $f['supplier_id']]);
+            Events::emit('booking.created', 'booking', $id, (int)$u['id'], 'Booking created'); Events::activity('trip', (int)$f['trip_id'], 'booking.created', (int)$u['id'], 'Booking created');
             return $id;
         });
         return ['booking' => self::detail($u, $id)];
@@ -96,6 +97,7 @@ final class BookingController {
             elseif ($f['trip_id'] !== (int)$cur['trip_id']) Db::exec('DELETE FROM booking_travelers WHERE booking_id=?', [$cur['id']]);
             $changed = array_keys(array_filter($f, function ($v, $k) use ($cur) { return (string)$v !== (string)($cur[$k] ?? ''); }, ARRAY_FILTER_USE_BOTH));
             Audit::log((int)$u['id'], $f['status'] === 'confirmed' && $cur['status'] !== 'confirmed' ? 'booking.confirmed' : 'booking.updated', 'booking', $cur['id'], ['fields' => $changed]);
+            if ($f['status'] !== $cur['status']) Events::emit('booking.status_changed', 'booking', (int)$cur['id'], (int)$u['id'], 'Booking ' . $cur['reference'] . ' status changed from ' . $cur['status'] . ' to ' . $f['status'], ['from' => $cur['status'], 'to' => $f['status']]);
         });
         return ['booking' => self::detail($u, (int)$cur['id'])];
     }
@@ -107,7 +109,9 @@ final class BookingController {
     }
     public static function cancel(array $pa): array {
         $u = Auth::require('bookings.manage'); $cur = self::find($u, (int)$pa['id']); if ($cur['status'] === 'cancelled') throw new HttpError(409, 'Already cancelled');
-        $d = Http::body(); Db::exec("UPDATE bookings SET status='cancelled', cancelled_at=UTC_TIMESTAMP(), cancel_reason=?, updated_at=UTC_TIMESTAMP(), version=version+1 WHERE id=?", [Validate::str($d, 'reason', 255), $cur['id']]);
+        $d = Http::body(); Db::tx(function () use ($d, $cur, $u) { Db::exec("UPDATE bookings SET status='cancelled', cancelled_at=UTC_TIMESTAMP(), cancel_reason=?, updated_at=UTC_TIMESTAMP(), version=version+1 WHERE id=?", [Validate::str($d, 'reason', 255), $cur['id']]);
+            CommissionController::onBookingCancelled((int)$cur['id'], (int)$u['id']);
+            Events::emit('booking.status_changed', 'booking', (int)$cur['id'], (int)$u['id'], 'Booking ' . $cur['reference'] . ' cancelled', ['from' => $cur['status'], 'to' => 'cancelled']); });
         Audit::log((int)$u['id'], 'booking.cancelled', 'booking', $cur['id'], ['reason' => $d['reason'] ?? null]);
         return ['booking' => self::detail($u, (int)$cur['id'])];
     }

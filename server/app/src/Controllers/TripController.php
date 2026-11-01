@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace LTI\Controllers;
-use LTI\{Auth, Audit, Db, Http, HttpError, Validate};
+use LTI\{Auth, Audit, Db, Http, HttpError, Validate, Events};
 final class TripController {
     const STATUSES = ['Inquiry', 'Planning', 'Proposal', 'Approved', 'Booked', 'Traveling', 'Traveled', 'Cancelled', 'Archived', 'Open', 'Closed'];
     const PERMS = ['primary', 'full', 'limited'];
@@ -88,6 +88,7 @@ final class TripController {
             $oid = Db::insert('INSERT INTO itinerary_options (trip_id, name, sort_order) VALUES (?,?,0)', [$id, 'Itinerary']);
             Db::exec('INSERT INTO itinerary_days (option_id, title, sort_order) VALUES (?,?,0)', [$oid, 'Day 1']);
             Audit::log((int)$u['id'], 'trip.created', 'trip', $id, ['name' => $f['name']]);
+            Events::emit('trip.created', 'trip', $id, (int)$u['id'], 'Trip created: ' . $f['name']);
             return $id;
         });
         return ['trip' => self::detail($id, $u)];
@@ -111,6 +112,8 @@ final class TripController {
             }
             $changed = array_keys(array_filter($f, function ($v, $k) use ($cur) { return (string)$v !== (string)($cur[$k] ?? ''); }, ARRAY_FILTER_USE_BOTH));
             Audit::log((int)$u['id'], $f['status'] !== $cur['status'] ? 'trip.status_changed' : 'trip.updated', 'trip', $cur['id'], ['fields' => $changed, 'from' => $cur['status'], 'to' => $f['status']]);
+            if ($f['status'] !== $cur['status']) Events::emit('trip.status_changed', 'trip', (int)$cur['id'], (int)$u['id'], 'Trip status changed from ' . $cur['status'] . ' to ' . $f['status'], ['from' => $cur['status'], 'to' => $f['status']]);
+            elseif ($changed) Events::activity('trip', (int)$cur['id'], 'trip.updated', (int)$u['id'], 'Trip updated: ' . implode(', ', $changed));
         });
         return ['trip' => self::detail((int)$cur['id'], $u)];
     }
