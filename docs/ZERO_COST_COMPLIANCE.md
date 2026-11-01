@@ -57,3 +57,6 @@ No new libraries, services or accounts. No payment processor, exchange-rate serv
 | Hosting cron | Scheduler | Host-provided | Existing plan (**unverified — TC33 BLOCKED**) | Fallback: token-protected URL endpoint |
 | aiosmtpd (development only) | Local SMTP test server | Apache-2.0 | $0 | Never deployed |
 No queue service, automation platform, SMS or email API added. **New monthly cost: $0.**
+
+## Phase 7 additions
+No libraries, services or accounts added. Calling uses the device’s own phone app via `tel:` links and manual logging. Rejected: Twilio, Vonage, Plivo, RingCentral, SIP trunks, commercial PBX, paid WebRTC/TURN services, phone-number validation APIs. **New monthly cost: $0.**
