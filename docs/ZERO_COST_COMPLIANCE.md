@@ -45,3 +45,15 @@ Twilio, Vonage, paid SIP trunks and phone numbers; SMS gateways; SendGrid/Mailgu
 
 ## Phase 4 additions
 No new libraries, services or accounts. File storage uses the hosting account’s disk; the PHP `fileinfo` extension (bundled with PHP, normally enabled) is now required for upload validation and must be confirmed in Phase 0. Upload sizes are also limited by the host’s `upload_max_filesize` and `post_max_size` (unverified). **New monthly cost: $0.**
+
+## Phase 5 additions
+No new libraries, services or accounts. No payment processor, exchange-rate service or e-signature service: payments are recorded manually, exchange rates are entered manually with a source note, and quote acceptance is recorded by staff. Printable invoices use the browser's Print / Save as PDF. **New monthly cost: $0.**
+
+## Phase 6 additions
+| Name | Purpose | License | Cost | Notes |
+|---|---|---|---|---|
+| PHPMailer 6.9.1 (vendored in `server/app/vendor/phpmailer`) | SMTP sending | LGPL-2.1 | $0 | No Composer needed on the host |
+| Hosting SMTP mailbox | Outbound email | Host-provided | Existing plan (unverified) | Sending limits unverified |
+| Hosting cron | Scheduler | Host-provided | Existing plan (**unverified — TC33 BLOCKED**) | Fallback: token-protected URL endpoint |
+| aiosmtpd (development only) | Local SMTP test server | Apache-2.0 | $0 | Never deployed |
+No queue service, automation platform, SMS or email API added. **New monthly cost: $0.**

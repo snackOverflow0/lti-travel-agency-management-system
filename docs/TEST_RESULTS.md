@@ -1,126 +1,93 @@
-# Test report — Phase 4 (complete checkpoint, awaiting approval)
+# Test report — Phase 6, increment 1 (operations backend)
 
-All results come from one run of `run-tests.sh` in this session (logs in `test-output/`): Ubuntu 24.04, PHP 8.3.6 built-in server on 127.0.0.1:8000, MariaDB 10.11, Chromium/Playwright 1.56, a freshly migrated and seeded **test** database per suite. Not run on your XAMPP (Windows, PHP 8.2) or on Network Solutions.
+One run of `run-tests.sh` (logs in `test-output/`) plus the Phase 6 suite against a real local SMTP server (aiosmtpd, test only) and the real CLI worker. Ubuntu 24.04, PHP 8.3.6, MariaDB 10.11.14. Not run on XAMPP (Windows, PHP 8.2), MySQL, or Network Solutions.
+
+**Phase 6 is not complete.** Tasks, email, templates, workflows, follow-ups, the job queue, notifications and the activity timeline are implemented in PHP/MySQL and pass every applicable test. The restored Tasks, Emails, Automations, Workflows and Notifications screens still show labelled prototype data (increment 2). Unattended scheduling on Network Solutions is **BLOCKED** pending account verification. **Prerequisite:** Phase 5 is also unfinished (financial screens not connected) and unapproved.
 
 | Suite | Result |
 |---|---|
-| TC31 React production build (TypeScript strict + Vite) | PASS |
-| TC32 PHP syntax check, every PHP file | PASS — no errors |
-| Phase 2 API regression | 20/20 |
-| Phase 3 API regression | 15/15 |
-| Phase 4 API | 29/29 |
-| Phase 4 browser — Suppliers, Bookings, Documents (run 3 times) | 7/7, 7/7, 7/7 |
-| Phase 4 browser — Group trips, Forms, Content library | 9/9 |
-| Phase 3 browser regression | 11/11 |
-| Restoration browser regression | 12/12 |
+| React production build | PASS |
+| PHP syntax check | PASS — no errors |
+| Phase 6 API (real SMTP, real worker) | 28/28 |
+| Phase 2 / 3 / 4 / 5 API regression | 20/20, 15/15, 29/29, 26/26 |
+| Phase 4 browser regression | 7/7 (×3), 9/9 |
+| Phase 3 browser / restoration regression | 11/11, 12/12 |
 
 ## Mandatory test cases
-| TC | Requirement | Backend/API | Restored screens |
+| TC | Requirement | API / backend | Restored screens |
 |---|---|---|---|
-| TC01 | Create group trip | PASS | PASS |
-| TC02 | Edit group trip | PASS | PASS |
-| TC03 | Register existing traveler | PASS | PASS |
-| TC04 | Register new traveler, create contact | PASS | PASS |
-| TC05 | Prevent duplicate registration | PASS | PASS |
-| TC06 | Enforce capacity rules | PASS | PASS |
-| TC07 | Create sub-trip in group | PASS | PASS |
-| TC08 | Sync group itinerary into sub-trip | PASS | PASS |
-| TC09 | Preserve custom sub-trip activities | PASS | PASS |
-| TC10 | Create supplier | PASS | PASS |
-| TC11 | Edit supplier | PASS | PASS |
-| TC12 | Archive supplier, bookings intact | PASS | PASS |
-| TC13 | Booking linked to trip and supplier | PASS | PASS |
-| TC14 | Add traveler to booking | PASS | PASS |
-| TC15 | Edit and cancel booking | PASS | PASS |
-| TC16 | Reject invalid booking relationships | PASS | N/A (screen only offers valid choices) |
-| TC17 | Create custom form | PASS | PASS |
-| TC18 | Add, edit, reorder fields | PASS | PASS |
-| TC19 | Publish form, submit response | PASS | PASS (public link, no sign-in) |
-| TC20 | Submissions in MySQL | PASS | PASS |
-| TC21 | Upload document, metadata in MySQL | PASS | PASS |
-| TC22 | Download authorized document | PASS | PASS |
-| TC23 | Reject unauthorized document access | PASS | PASS |
-| TC24 | Rename and archive document | PASS | PASS |
-| TC25 | Content library folder | PASS | PASS |
-| TC26 | Create, edit, duplicate template | PASS | PASS |
-| TC27 | Survives browser refresh | PASS | PASS (all Phase 4 screens) |
-| TC28 | Persists after logout/login | PASS | PASS (all Phase 4 screens) |
-| TC29 | Staff roles and restricted access | PASS | PASS |
-| TC30 | Regression: Contacts, Trips, Itineraries | PASS (20/20, 15/15) | PASS (11/11, 12/12) |
-| TC31 | React production build | — | PASS |
-| TC32 | PHP syntax and backend tests | PASS (lint clean, 64/64) | — |
+| TC01 | Create task | PASS | NOT RUN — restored screens not yet connected |
+| TC02 | Assign task | PASS | NOT RUN — restored screens not yet connected |
+| TC03 | Edit task | PASS | NOT RUN — restored screens not yet connected |
+| TC04 | Complete and reopen | PASS | NOT RUN — restored screens not yet connected |
+| TC05 | Overdue filtering | PASS | NOT RUN — restored screens not yet connected |
+| TC06 | Unauthorized task access | PASS | NOT RUN — restored screens not yet connected |
+| TC07 | Create email template | PASS | NOT RUN — restored screens not yet connected |
+| TC08 | Personalised variables | PASS | NOT RUN — restored screens not yet connected |
+| TC09 | Reject invalid variables | PASS | NOT RUN — restored screens not yet connected |
+| TC10 | Save email draft | PASS | NOT RUN — restored screens not yet connected |
+| TC11 | Queue email | PASS | NOT RUN — restored screens not yet connected |
+| TC12 | SMTP result recorded accurately | PASS | NOT RUN — restored screens not yet connected |
+| TC13 | No duplicate sends on retry | PASS | NOT RUN — restored screens not yet connected |
+| TC14 | Create workflow | PASS | NOT RUN — restored screens not yet connected |
+| TC15 | Enable/disable workflow | PASS | NOT RUN — restored screens not yet connected |
+| TC16 | Trigger from real event | PASS | NOT RUN — restored screens not yet connected |
+| TC17 | Conditions evaluated | PASS | NOT RUN — restored screens not yet connected |
+| TC18 | Task created by workflow | PASS | NOT RUN — restored screens not yet connected |
+| TC19 | Notification from workflow | PASS | NOT RUN — restored screens not yet connected |
+| TC20 | Delayed follow-up | PASS | NOT RUN — restored screens not yet connected |
+| TC21 | Job persistence after restart | PASS | NOT RUN — restored screens not yet connected |
+| TC22 | Concurrency-safe claiming | PASS | NOT RUN — restored screens not yet connected |
+| TC23 | Retry recoverable job | PASS | NOT RUN — restored screens not yet connected |
+| TC24 | Stop at retry limit | PASS | NOT RUN — restored screens not yet connected |
+| TC25 | Recover abandoned job | PASS | NOT RUN — restored screens not yet connected |
+| TC26 | Notification persists | PASS | NOT RUN — restored screens not yet connected |
+| TC27 | Read/unread | PASS | NOT RUN — restored screens not yet connected |
+| TC28 | Timeline from real events | PASS | NOT RUN — restored screens not yet connected |
+| TC29 | Execution history | PASS | NOT RUN — restored screens not yet connected |
+| TC30 | Unauthorized workflow editing | PASS | NOT RUN — restored screens not yet connected |
+| TC31 | Actions persist across refresh | PASS (re-read in new sessions and after a server restart) | NOT RUN — restored screens not yet connected |
+| TC32 | Local scheduler executes jobs | PASS (CLI worker, 3 parallel workers, token-protected HTTP endpoint) | — |
+| TC33 | Production scheduler verified | **BLOCKED** — no access to the Network Solutions account; cron availability unconfirmed | — |
+| TC34 | Regression of Contacts, Trips, Bookings, Finance | PASS (API 20/20, 15/15, 29/29, 26/26) | PASS (browser 7/7 ×3, 9/9, 11/11, 12/12) |
+| TC35 | React production build | — | PASS |
+| TC36 | PHP syntax and backend tests | PASS (lint clean; 118/118 API tests) | — |
+| TC37 | Automations do not alter financial records | PASS | — |
+| TC38 | No credentials in logs or responses | PASS | — |
 
-## Phase 4 browser tests — Group trips, Forms, Content library
+## Phase 6 tests
 | # | Test | Result | Evidence |
 |---|---|---|---|
-| 1 | TC01–TC02 Create a group trip, edit details, landing page and room categories in the restored Group trips screen | PASS | group 3: details, landing headline and room category saved |
-| 2 | TC03–TC06 Register existing and new travelers; duplicate and capacity rules; administrator override; cancellation | PASS | existing + new traveler registered; duplicate and capacity refused; override recorded; cancellation released places |
-| 3 | TC07–TC09 Create a sub-trip; sync the group itinerary; custom sub-trip activity preserved | PASS | preview showed 1 to add; after sync: Vienna markets walk>Private dinner for Amelia |
-| 4 | TC17–TC18 Create a form; rename; add, edit, require and reorder fields in the restored builder | PASS | form 1: First name:1,Cabin preference:1,Email:1 |
-| 5 | TC19–TC20 Publish; public link submission without sign-in; response stored, linked to a trip, exported; duplicate and archive | PASS | public submission 1 stored with answers and contact; linked to trip; CSV; duplicate; archive |
-| 6 | TC25–TC26 Content library: folders, activity templates (create, edit, duplicate, move), use on a trip; packing list | PASS | folder created/renamed; template created in folder, edited and moved, duplicated, added to Amalfi day 1; packing list item saved |
-| 7 | TC27–TC28 Groups, forms and library survive refresh and sign-out/sign-in; nothing written to browser storage | PASS | present after refresh and re-login |
-| 8 | TC29 Roles: sales cannot create groups; another advisor cannot see the group; finance has no forms access | PASS | sales blocked; advisor2 does not see the group; finance forms 403 |
-| 9 | Mobile 390px: Group trips, Forms and Content library without horizontal overflow | PASS | 390/390/390 |
+| 1 | TC01 Create task; MySQL record | PASS | todo/high/1/2/2026-11-04 |
+| 2 | TC02 Assign task to a staff member; history and notification recorded | PASS | reassigned to advisor2; history + notification |
+| 3 | TC03 Edit task; persists; stale version 409 | PASS | saved |
+| 4 | TC04 Complete and reopen task | PASS | completed (event recorded), reopened, second reopen 409 |
+| 5 | TC05 Overdue and upcoming filters use the agency time zone | PASS | overdue and upcoming lists correct |
+| 6 | TC06 Unauthorized task access refused; tasks never reveal hidden CRM records | PASS | other advisor 404; linked contact shown as Restricted record; linking hidden contact 404; traveler 403 |
+| 7 | TC07 Create email template | PASS | template 1 with 5 variables |
+| 8 | TC08 Personalised variables render from linked records | PASS | Your Amalfi Coast Anniversary is confirmed |
+| 9 | TC09 Invalid or unsafe variables rejected; advisors cannot manage templates | PASS | unknown variable, expression, header injection and script refused (422); advisor 403 |
+| 10 | TC10 Save email draft from a template linked to contact and trip | PASS | draft 1 to shah@example.com |
+| 11 | TC11–TC12 Queue email; real SMTP acceptance and failure recorded accurately | PASS | accepted by local SMTP (message received, rendered); closed port: 3 failed attempts then Failed; no transport: Failed with explanation |
+| 12 | TC13 Duplicate sends prevented: crash mid-send becomes Unknown (never resent); parallel workers send once | PASS | abandoned send -> Unknown, flagged, not resent, retry refused; 3 parallel workers -> exactly 1 SMTP message; manual resolution recorded |
+| 13 | TC14 Create workflow definition (validated on the server) | PASS | workflow 1 (draft) with 5 actions |
+| 14 | TC30 Unauthorized users cannot edit workflows; unsafe definitions refused | PASS | {"advisor create":403,"finance enable":403,"advisor edit":403,"sql action":422,"financial status":422,"bad field":422} |
+| 15 | TC15 Enable and disable workflow | PASS | disabled then active |
+| 16 | TC16–TC19 Real trip status change triggers the workflow: conditions, task, notification, email queued | PASS | Planning -> skipped (condition); Booked -> execution 2 completed: task for trip owner, notification, email accepted |
+| 17 | TC20 Delayed follow-ups stored with UTC time from the configured time zone | PASS | workflow follow-up 2026-11-03 14:00:00 UTC (09:00 New York); manual follow-up 08:30 Manila = 2026-11-02 00:30:00 UTC; jobs pending |
+| 18 | TC21 Pending jobs persist across a server restart | PASS | 2 pending jobs before and after restart; visible in /jobs/status |
+| 19 | TC22 Concurrency-safe claiming: 3 parallel workers run each of 20 jobs exactly once | PASS | 20 tasks, no job run twice, 3 workers shared the load |
+| 20 | TC23–TC24 Recoverable failure retried with back-off then succeeds; repeated failure stops at the limit | PASS | retry scheduled later, then completed on attempt 2; permanent failure stopped after 3 attempts and flagged for review |
+| 21 | TC25 Abandoned worker job (expired lease) is recovered | PASS | lease expired -> logged as abandoned -> re-run once -> completed |
+| 22 | TC26–TC27 Notifications persist; read, unread and dismiss | PASS | new session sees 24 unread; read/unread/dismiss work; another user 404 |
+| 23 | TC28 Activity timeline built from real events | PASS | trip: followup.executed, followup.scheduled, workflow.executed, workflow.note, trip.status_changed, task.completed; contact includes email events; hidden from advisor2 |
+| 24 | TC29 Workflow execution history | PASS | completed, skipped |
+| 25 | Date trigger: departure approaching (agency time zone) | PASS | execution for Amalfi (32 days before departure) |
+| 26 | TC32 Local scheduler: CLI worker and token-protected HTTP endpoint | PASS | 26 CLI runs recorded; HTTP run with token 200; wrong/missing token 403; scheduler healthy |
+| 27 | TC37 Automations never alter financial records | PASS | 2 finance-triggered workflows ran; invoice/payment/commission totals unchanged (200.00/150.00/50.00/1/50.00/0/partially_paid) |
+| 28 | TC38 Credentials never appear in logs, errors or API responses | PASS | SMTP AUTH attempt recorded (failed); password absent from DB logs, API responses and server log; job payloads not exposed |
 
-## Phase 4 browser tests — Suppliers, Bookings, Documents (final run)
-| # | Test | Result | Evidence |
-|---|---|---|---|
-| 1 | TC10–TC11 Create a supplier in the restored Suppliers screen and edit it; MySQL updated | PASS | supplier 1; email now groups@sirenuse.example |
-| 2 | TC13–TC15 Create a booking for a trip and supplier with a traveler; confirm, edit and cancel in the restored Bookings screen | PASS | B-00001: created with traveler, confirmed, edited, cancelled/Client moved dates |
-| 3 | TC12 Archive the supplier from its profile; the booking keeps its supplier | PASS | archived; booking still linked |
-| 4 | TC21–TC24 Upload, preview, download, refuse other advisor, rename and archive a document in the restored Documents screen | PASS | doc 1: stored privately, preview, download, other advisor 404, renamed, archived |
-| 5 | TC27–TC28 Records survive refresh and sign-out/sign-in; none are written to browser storage | PASS | present after refresh and re-login (1/11) |
-| 6 | TC29 Role restrictions in the restored screens (backend enforced) | PASS | advisor: New supplier disabled; finance: booking refused in UI; API 403 for finance booking and upload |
-| 7 | Mobile 390px: Suppliers, Bookings and Documents usable without horizontal overflow | PASS | 390/390/390 |
-
-## Phase 4 API tests
-| # | Test | Result | Evidence |
-|---|---|---|---|
-| 1 | TC01 Create group trip; MySQL record has group fields | PASS | group 3: group/3/2027-11-20/4/Open |
-| 2 | TC02 Edit group; persists; stale version 409; deadline after departure 422 | PASS | saved; partial update kept dates; 2 rooms |
-| 3 | Group itinerary editable through the itinerary API | PASS | 3 group activities |
-| 4 | TC03 Register an existing contact: registration, sub-trip, travelers and synced itinerary | PASS | registration 1, sub-trip 4 with 3 synced activities |
-| 5 | TC04 Register a new traveler; contact is created and linked | PASS | contact 5 created |
-| 6 | TC05 Duplicate active registration is rejected (409) | PASS | Already registered for this group: Amelia Hartwell |
-| 7 | TC06 Capacity: over-capacity refused; advisor cannot override; administrator override recorded | PASS | refused 409; advisor override 409; admin override flagged; cancellation frees places |
-| 8 | Registration update: change room and add a traveler with checks | PASS | duplicate traveler 409; update 200 |
-| 9 | TC07 Create a sub-trip manually and associate it with the group | PASS | sub-trip 7 with custom dates |
-| 10 | TC08–TC09 Sync group itinerary into sub-trips; custom and edited sub-trip activities are preserved | PASS | preview {"subTripId":4,"daysAdded":1,"daysRemoved":0,"added":1,"updated":1,"removed":0,"customKept":2}; applied: AmaMagna embarkation > Welcome reception and briefing > P |
-| 11 | TC10 Create supplier; MySQL record | PASS | supplier 1; duplicate 409; bad category 422 |
-| 12 | TC11 Edit supplier; persists; stale version 409 | PASS | saved |
-| 13 | TC13 Create booking linked to an existing trip and supplier | PASS | B-00001/3/1/cruise/pending/3750.00 |
-| 14 | TC14 Add traveler to booking; travelers not on the trip are rejected | PASS | sub-trip booking with traveler; outsider 422 |
-| 15 | TC15 Edit and cancel booking; cancelled booking is read-only; history recorded | PASS | confirmed, commission recalculated, cancelled, history booking.created > booking.confirmed |
-| 16 | TC16 Invalid booking relationships are rejected | PASS | missing trip 404, missing supplier 422, other advisor trip 404, bad category 422, no trip 422 |
-| 17 | TC12 Archive supplier: existing bookings intact; cannot be newly assigned | PASS | archived; booking keeps supplier; new assignment 422 |
-| 18 | TC17–TC18 Create form; add, edit and reorder fields | PASS | order email,first,who,kids,dest |
-| 19 | TC19 Publish form; public submission with required and conditional validation | PASS | draft hidden; conditional required enforced; 2 submissions |
-| 20 | TC20 Submissions and answers in MySQL; contact and inquiry trip created; CSV export | PASS | 2 submissions; contact 8; trip “Kenya — Nora”; CSV ok; finance 403 |
-| 21 | Form duplicate and archive; archived form refuses public submissions | PASS | copy has 5 fields (draft); archived 404 |
-| 22 | TC21 Upload document; metadata in MySQL; file stored outside the web root; bad types rejected | PASS | document 1 (69 bytes) stored at app/storage; .php 415; disguised file 415 |
-| 23 | TC22 Authorized download returns the exact file | PASS | bytes identical; inline preview as PDF for owner |
-| 24 | TC23 Unauthorized access rejected (other advisor, traveler staff route, no session, direct file URL) | PASS | other advisor 404, traveler on staff route 403, anonymous 401, traveler portal (client-visible, own trip) 200, direct URL 404, finance upload 403 |
-| 25 | TC24 Rename and archive document; archived file no longer downloadable | PASS | renamed, archived, download 404, listed under archived |
-| 26 | TC25 Content library folders: create, rename, move, cycle prevented, non-empty delete refused | PASS | ok; finance 403 |
-| 27 | TC26 Templates: create, edit, duplicate, archive; use on a trip | PASS | activity added to Amalfi day 1; checklist added to packing; search excludes archived copy |
-| 28 | TC29 Backend role enforcement across Phase 4 modules | PASS | {"finance booking":403,"sales group":403,"advisor supplier":403,"sales register":403,"advisor2 view group":404,"traveler suppliers":403,"traveler library":403,"ops forms" |
-| 29 | Audit log covers Phase 4 actions | PASS | all present |
-
-## Defects found and fixed during Phase 4
-| Defect | Fix |
-|---|---|
-| Partial updates blanked omitted fields (groups, trips, suppliers, bookings) | Omitted fields keep current values |
-| Sub-trip save marked every synced activity as customized | Comparison corrected; explicit customization flag |
-| Document upload failed (storage path longer than column) | Column widened |
-| Booking detail re-fetch loop | Detail marker preserved |
-| Form edits never saved: field IDs were prefixed twice, so the server inserted duplicates | IDs mapped correctly |
-| Supplier name kept in saved interface state | Cleared before saving |
-| Intermittent: a database booking could reach browser storage (timing-dependent; not reproducible on demand) | Storage-layer guard scrubs every write of the sample-data store; Phase 4 suite then passed 3 of 3 runs |
-
-Test-side corrections (no application change): integer vs string assertion; contacts outside an advisor’s scope; dev server serving index.html for unknown paths; disabled-button assertion; UTF-8 for the command-line MySQL client; “View” selector matching “Preview”; a step run as Sales who correctly cannot see the trip; names that also exist in the prototype’s sample data.
-
-## Not implemented / not tested
-- File-upload form fields: not offered (answers would be discarded until secure public file handling is designed).
-- Destination guides, task templates and “More libraries” in the content hub remain prototype (Phase 6).
-- XAMPP/Windows/PHP 8.2 and Network Solutions hosting; simultaneous registrations from two browsers (serialized by a row lock on the server, but no parallel test).
+## Defects found and fixed
+- Migration failed: a new constraint name (`fk_tc_user`) duplicated one from `trip_collaborators`. Renamed; all constraint names checked unique across migrations.
+- Test harness: process-kill commands matched their own shell (fixed by separating kill and launch). No application defect.
+- Housekeeping: the local test configuration had been tracked by git since an early phase; it is now untracked (it was always excluded from ZIPs).
