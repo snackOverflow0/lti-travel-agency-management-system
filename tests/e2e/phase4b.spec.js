@@ -72,7 +72,7 @@ await T('TC19–TC20 Publish; public link submission without sign-in; response s
   await p.click('#m .seg button:has-text("Responses")'); await S('responses', p.waitForSelector(`#m button[onclick^="frView('dr"]`)); await p.click(`#m button[onclick^="frView('dr"]`); await p.selectOption('#fr2', amalfi); await p.click('#ov .btn.g1');
   await waitDb('linked', `SELECT CONCAT(trip_id,'|',status) FROM form_submissions WHERE id=${sid}`, v => v === amalfi + '|reviewed');
   const csv = await p.request.get(BASE + `api/forms/${st.form}/submissions.csv`); A(csv.status() === 200 && (await csv.text()).includes('Veranda'), 'csv');
-  await p.click('#m button:has-text("Duplicate")'); await waitDb('duplicate', "SELECT COUNT(*) FROM forms WHERE name='Danube group intake (copy)'", v => v === '1');
+  await p.click('#m button:has-text("Duplicate")'); await waitDb('duplicate', "SELECT COUNT(*) FROM forms WHERE name='Danube group intake (copy)'", v => v === '1'); await S('copy opened', p.waitForFunction(f => X.ui.form && X.ui.form !== 'df' + f, st.form));
   await p.evaluate(f => { X.ui.form = 'df' + f; go('forms'); }, st.form); await p.click('#m button:has-text("Archive")'); await waitDb('archive', `SELECT status FROM forms WHERE id=${st.form}`, v => v === 'archived');
   return 'public submission ' + sid + ' stored with answers and contact; linked to trip; CSV; duplicate; archive'; });
 await T('TC25–TC26 Content library: folders, activity templates (create, edit, duplicate, move), use on a trip; packing list', async p => {

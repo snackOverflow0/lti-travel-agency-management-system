@@ -1,0 +1,142 @@
+[
+    [
+        "TC01 Create task; MySQL record",
+        true,
+        "todo|high|1|2|2026-11-04"
+    ],
+    [
+        "TC02 Assign task to a staff member; history and notification recorded",
+        true,
+        "reassigned to advisor2; history + notification"
+    ],
+    [
+        "TC03 Edit task; persists; stale version 409",
+        true,
+        "saved"
+    ],
+    [
+        "TC04 Complete and reopen task",
+        true,
+        "completed (event recorded), reopened, second reopen 409"
+    ],
+    [
+        "TC05 Overdue and upcoming filters use the agency time zone",
+        true,
+        "overdue and upcoming lists correct"
+    ],
+    [
+        "TC06 Unauthorized task access refused; tasks never reveal hidden CRM records",
+        true,
+        "other advisor 404; linked contact shown as Restricted record; linking hidden contact 404; traveler 403"
+    ],
+    [
+        "TC07 Create email template",
+        true,
+        "template 1 with 5 variables"
+    ],
+    [
+        "TC08 Personalised variables render from linked records",
+        true,
+        "Your Amalfi Coast Anniversary is confirmed"
+    ],
+    [
+        "TC09 Invalid or unsafe variables rejected; advisors cannot manage templates",
+        true,
+        "unknown variable, expression, header injection and script refused (422); advisor 403"
+    ],
+    [
+        "TC10 Save email draft from a template linked to contact and trip",
+        true,
+        "draft 1 to shah@example.com"
+    ],
+    [
+        "TC11\u2013TC12 Queue email; real SMTP acceptance and failure recorded accurately",
+        true,
+        "accepted by local SMTP (message received, rendered); closed port: 3 failed attempts then Failed; no transport: Failed with explanation"
+    ],
+    [
+        "TC13 Duplicate sends prevented: crash mid-send becomes Unknown (never resent); parallel workers send once",
+        true,
+        "abandoned send -> Unknown, flagged, not resent, retry refused; 3 parallel workers -> exactly 1 SMTP message; manual resolution recorded"
+    ],
+    [
+        "TC14 Create workflow definition (validated on the server)",
+        true,
+        "workflow 1 (draft) with 5 actions"
+    ],
+    [
+        "TC30 Unauthorized users cannot edit workflows; unsafe definitions refused",
+        true,
+        "{\"advisor create\":403,\"finance enable\":403,\"advisor edit\":403,\"sql action\":422,\"financial status\":422,\"bad field\":422}"
+    ],
+    [
+        "TC15 Enable and disable workflow",
+        true,
+        "disabled then active"
+    ],
+    [
+        "TC16\u2013TC19 Real trip status change triggers the workflow: conditions, task, notification, email queued",
+        true,
+        "Planning -> skipped (condition); Booked -> execution 2 completed: task for trip owner, notification, email accepted"
+    ],
+    [
+        "TC20 Delayed follow-ups stored with UTC time from the configured time zone",
+        true,
+        "workflow follow-up 2026-11-03 14:00:00 UTC (09:00 New York); manual follow-up 08:30 Manila = 2026-11-02 00:30:00 UTC; jobs pending"
+    ],
+    [
+        "TC21 Pending jobs persist across a server restart",
+        true,
+        "2 pending jobs before and after restart; visible in \/jobs\/status"
+    ],
+    [
+        "TC22 Concurrency-safe claiming: 3 parallel workers run each of 20 jobs exactly once",
+        true,
+        "20 tasks, no job run twice, 3 workers shared the load"
+    ],
+    [
+        "TC23\u2013TC24 Recoverable failure retried with back-off then succeeds; repeated failure stops at the limit",
+        true,
+        "retry scheduled later, then completed on attempt 2; permanent failure stopped after 3 attempts and flagged for review"
+    ],
+    [
+        "TC25 Abandoned worker job (expired lease) is recovered",
+        true,
+        "lease expired -> logged as abandoned -> re-run once -> completed"
+    ],
+    [
+        "TC26\u2013TC27 Notifications persist; read, unread and dismiss",
+        true,
+        "new session sees 24 unread; read\/unread\/dismiss work; another user 404"
+    ],
+    [
+        "TC28 Activity timeline built from real events",
+        true,
+        "trip: followup.executed, followup.scheduled, workflow.executed, workflow.note, trip.status_changed, task.completed; contact includes email events; hidden from advisor2"
+    ],
+    [
+        "TC29 Workflow execution history",
+        true,
+        "completed, skipped"
+    ],
+    [
+        "Date trigger: departure approaching (agency time zone)",
+        true,
+        "execution for Amalfi (32 days before departure)"
+    ],
+    [
+        "TC32 Local scheduler: CLI worker and token-protected HTTP endpoint",
+        true,
+        "26 CLI runs recorded; HTTP run with token 200; wrong\/missing token 403; scheduler healthy"
+    ],
+    [
+        "TC37 Automations never alter financial records",
+        true,
+        "2 finance-triggered workflows ran; invoice\/payment\/commission totals unchanged (200.00|150.00|50.00|1|50.00|0|partially_paid)"
+    ],
+    [
+        "TC38 Credentials never appear in logs, errors or API responses",
+        true,
+        "SMTP AUTH attempt recorded (failed); password absent from DB logs, API responses and server log; job payloads not exposed"
+    ]
+]

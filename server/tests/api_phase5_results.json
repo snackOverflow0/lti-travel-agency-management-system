@@ -1,0 +1,132 @@
+[
+    [
+        "TC01 Create quote; MySQL record",
+        true,
+        "Q-2026-00001|draft|USD|2700.00|1 (client-sent total ignored)"
+    ],
+    [
+        "TC02 Edit draft quote; persists; stale version 409",
+        true,
+        "saved"
+    ],
+    [
+        "TC03\u2013TC04 Multiple line items; server-side subtotal and total",
+        true,
+        "3 lines; subtotal 3280.49"
+    ],
+    [
+        "TC05 Discount and configured tax computed on the server; invalid values rejected",
+        true,
+        "discount 32805, tax 23615, total 3188.59 (independently computed); bad values 422"
+    ],
+    [
+        "TC06 Send and accept; immutable snapshot preserved; accepted quote cannot be edited",
+        true,
+        "snapshot total 3188.59 with SHA-256; edit 409; tax rate change does not alter it"
+    ],
+    [
+        "TC07 + TC35 Convert accepted quote to invoice from the snapshot; repeat conversions blocked or replayed",
+        true,
+        "invoice 1 total 3188.59; replay returned same invoice; new attempt 409; 1 invoice in MySQL"
+    ],
+    [
+        "TC08 Standalone invoice (EUR, contact only)",
+        true,
+        "invoice 2 EUR 1500.00 draft"
+    ],
+    [
+        "TC09 Unique invoice numbers, including concurrent issue requests",
+        true,
+        "INV-2026-00001, INV-2026-00002, INV-2026-00003; parallel issue: 200\/409"
+    ],
+    [
+        "TC10\u2013TC12 Partial payment, outstanding balance, final payment marks paid",
+        true,
+        "balance after partial 2188.59; paid after final; payments marked unverified"
+    ],
+    [
+        "TC13 Overpayment, draft, currency mismatch and card numbers rejected",
+        true,
+        "overpay 422; draft 409; wrong currency 422; card number 422; paid invoice 422"
+    ],
+    [
+        "TC14 Reverse payment; balance recalculated; reason required; audited",
+        true,
+        "balance restored to 2188.59; advisor 403; no reason 422"
+    ],
+    [
+        "TC15\u2013TC16 Installment schedule must reconcile; allocations never double count",
+        true,
+        "mismatch 422; allocations 700.00 then 550.00 after reversal and refund = amount paid"
+    ],
+    [
+        "TC17 Create supplier payable from a booking; duplicate reference refused",
+        true,
+        "payable 1 4700.00 from supplier cost; duplicate 409"
+    ],
+    [
+        "TC18\u2013TC19 Partial supplier payment; outstanding balance; overpayment refused; reversal restores",
+        true,
+        "balance 2700.00; overpay 422; reversal back to 4700.00"
+    ],
+    [
+        "TC20 Percentage commission rule calculated on the server",
+        true,
+        "10% of 5400.00 = 540.00; advisor 50% = 270.00"
+    ],
+    [
+        "TC21 Flat-amount supplier rule wins over the default; currency-specific",
+        true,
+        "flat 250.00; advisor 40% = 100.00"
+    ],
+    [
+        "TC22 Commission linked to booking and advisor; advisors see only their own",
+        true,
+        "filter by advisor; advisor sees own only; other advisor 404"
+    ],
+    [
+        "TC23 Agency receipt and advisor payout recorded separately",
+        true,
+        "payout before receipt 409; receipt -> payable; over-payout 422; advisor 403; payout -> paid"
+    ],
+    [
+        "TC24 Commission reversal: automatic on booking cancellation; blocked while payouts exist",
+        true,
+        "auto-reversed on cancel; manual reversal requires payouts and receipts to be reversed first"
+    ],
+    [
+        "TC25 Multi-currency: minor units enforced, totals per currency, explicit manual conversion",
+        true,
+        "JPY 146000 shown with 0 decimals (1.5 x 7333 = 10999.5 rounds half-up); fractional yen 422; KWD (3-decimal) refused as unsupported; USD + EUR x 1.08 = 4809.59; JPY listed as missing a rate"
+    ],
+    [
+        "TC26 Dashboard figures equal direct MySQL totals",
+        true,
+        "invoiced USD 3189.59, receivables EUR 950.00, payables USD 2700.00, payments EUR 550.00 all match SQL"
+    ],
+    [
+        "TC27 Invoice aging and commission reports export as CSV",
+        true,
+        "aging CSV contains INV-2026-00001; commission CSV contains B-00001; quote conversion report"
+    ],
+    [
+        "TC28 Restricted financial access enforced on the server",
+        true,
+        "{\"sales invoices\":403,\"advisor2 invoice\":404,\"advisor2 print\":404,\"advisor void\":403,\"advisor rule\":403,\"traveler dashboard\":403,\"sales report\":403,\"advisor audit\":403,\"advisor2 aging rows\":0}"
+    ],
+    [
+        "TC29 Financial records persist across a new session",
+        true,
+        "new session reads the same balances, payments and schedule"
+    ],
+    [
+        "TC30 Reversals and adjustments are audit-logged in a tamper-evident chain",
+        true,
+        "chain of 42 events valid; a direct SQL edit is detected at event 19"
+    ],
+    [
+        "TC35 Repeated payment submissions are not duplicated",
+        true,
+        "replay returned the same payment; changed body with same key 422; parallel duplicates 200\/201; exactly one row per key"
+    ]
+]
