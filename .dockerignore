@@ -1,0 +1,14 @@
+
+.git
+.gitignore
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+server/app/config/config.php
+server/app/config/config.dev.php
+server/app/config/config.test.php
+server/app/data/
+server/tests/
+tests/
+docs/

@@ -8,3 +8,11 @@ server/app/storage/logs/*
 server/app/config/config.dev.php
 server/app/config/config.test.php
 test-output/*.json
+release/
+
+node_modules/
+dist/
+.env
+.env.*
+server/app/config/config.php
+server/app/data/
