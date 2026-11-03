@@ -1,0 +1,57 @@
+[
+    [
+        "F01 Staff creates a CRM contact",
+        true,
+        "contact 5 with normalised phone"
+    ],
+    [
+        "F02 Contact to trip",
+        true,
+        "trip 3"
+    ],
+    [
+        "F03 Trip to itinerary (days, activities, internal note)",
+        true,
+        "2 days, 2 activities in MySQL"
+    ],
+    [
+        "F04 Trip to booking",
+        true,
+        "booking 1 linked to trip"
+    ],
+    [
+        "F05 Booking to quote: server total ignores client value; accepted; converted once (idempotent)",
+        true,
+        "quote total 2700.00 (client sent 1.00); accepted; one invoice 1"
+    ],
+    [
+        "F06 Invoice issued; payment recorded; retry not duplicated; overpayment refused; manual label",
+        true,
+        "INV-2026-00001; balance 1700.00 after 1000.00; retry replayed (1 payment row); 2000.00 overpayment 422; payment status 'unverified'"
+    ],
+    [
+        "F07 Financial audit chain verifies after the flow",
+        true,
+        "hash chain intact (7 events)"
+    ],
+    [
+        "F08 Call to CRM follow-up: missed call, callback, task",
+        true,
+        "missed call -> callback -> task linked to the trip"
+    ],
+    [
+        "F09 Workflow event to notification and task via the real worker",
+        true,
+        "notification and task for the trip owner"
+    ],
+    [
+        "F10 Client sees the published itinerary without internal notes; another client cannot; no invoices in the portal",
+        true,
+        "client 200 with itinerary, internal note absent; other client 404; invoice 403"
+    ],
+    [
+        "F11 Everything survives logout and a new login",
+        true,
+        "contact, trip, booking, quote, invoice re-read in a new session"
+    ]
+]

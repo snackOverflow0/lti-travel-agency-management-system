@@ -1,0 +1,37 @@
+[
+ {
+  "name": "Setup: owner runs the import through the API",
+  "ok": true,
+  "detail": "78 library records + 71 folders + 10 email templates imported"
+ },
+ {
+  "name": "Activities and packing lists: each migrated record appears exactly once (no leftover samples)",
+  "ok": true,
+  "detail": "{\"n\":15,\"nonDb\":0,\"belcanto\":1,\"packing\":3}"
+ },
+ {
+  "name": "Destination guide: edit a migrated guide through the screen; MySQL updated; persists after refresh",
+  "ok": true,
+  "detail": "MySQL: 4|Ferries pause in winter; book private drivers between Posi…; visible after refresh"
+ },
+ {
+  "name": "Task templates: migrated list; create a task from one; edit a template; persists",
+  "ok": true,
+  "detail": "task created due 2026-11-03 (template offset 1 day); template edited to 2 days / High; persisted after refresh"
+ },
+ {
+  "name": "Photo library: browse the migrated folder tree; create a subfolder under the right parent",
+  "ok": true,
+  "detail": "Ocean → Alaska & the Inside Passage …; new subfolder stored as photos|Ocean"
+ },
+ {
+  "name": "Itinerary, cruise, workflow and automation libraries show migrated records; references are read-only",
+  "ok": true,
+  "detail": "itinerary folders; cruise; 26 workflow references (20 + 6 library names); 26 automation references"
+ },
+ {
+  "name": "Mobile 390px: Content hub and photo library fit",
+  "ok": true,
+  "detail": "[0,0,0]"
+ }
+]

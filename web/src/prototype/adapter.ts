@@ -6,10 +6,15 @@ import { installTrips, pageNote, afterDraw, contactTripsCard } from './trips';
 import { installPhase4, afterDraw4, LIVE4 } from './phase4';
 import { installPhase4b, afterDraw4b, note4b } from './phase4b';
 import { installStorageGuard } from './storageGuard';
-import { installPhone, LIVE_PHONE } from './phone';
+import { installPhone, installUnavailable, LIVE_PHONE } from './phone';
+import { installFinance, LIVE_FINANCE } from './finance';
+import { installOps, LIVE_OPS } from './ops';
+import { installComms, LIVE_COMMS } from './comms';
+import { installLibrary, LIVE_LIBRARY } from './library';
+import { installAdmin, LIVE_ADMIN } from './admin';
 const w = window as any;
 const ROLE_MAP: Record<string, string> = { owner: 'Owner', admin: 'Admin', supervisor: 'Supervisor', advisor: 'Advisor', sales: 'Sales', operations: 'Operations', finance: 'Finance', traveler: 'Traveler' };
-const LIVE = new Set(['contacts', 'lcontact', 'staff', ...LIVE4, ...LIVE_PHONE]);  // trips/itinerary/portal decided by pageNote()
+const LIVE = new Set(['contacts', 'lcontact', 'staff', ...LIVE4, ...LIVE_PHONE, ...LIVE_FINANCE, ...LIVE_OPS, ...LIVE_COMMS, ...LIVE_LIBRARY, ...LIVE_ADMIN]);  // trips/itinerary/portal decided by pageNote()
 const PHASE: Record<string, string> = { tr: 'Phase 3 (trips, itineraries, client portal)', co: 'Phase 4 (forms, documents)', bo: 'Phases 4–5 (suppliers, bookings, finance)', cm: 'Phase 5 (finance)', ta: 'Phase 6 (tasks, calendar)', em: 'Phase 6 (email)', au: 'Phase 6 (automations, workflows)', li: 'Phase 3–6 (content library)', ca: 'Phase 7 (calling)', rp: 'Phase 8 (reporting)', he: 'Phase 8' };
 let me: User;
 const can = (p: string) => me.permissions.includes(p);
@@ -114,6 +119,12 @@ function banner() {
   m.prepend(d);
   const bt = m.querySelector('.bnr .bt p'); if (bt) bt.textContent = 'You are signed in with your LTI account. Contacts, Staff accounts, Trips, Itineraries and the traveler portal are live database modules; all other modules still run on prototype sample data in this browser until their backend phase.';
 }
+/** The Revision 27 script appends a "Demo prototype · sample data saved in this browser only…" footer and, on Documents, says files are
+ *  "kept in this browser only". Both are false in the live system; replace them after every render with accurate statements. */
+function fixClaims() { const m = document.getElementById('m'); if (!m) return;
+  m.querySelectorAll('p').forEach(p => { const t = p.textContent || '';
+    if (/^Demo (prototype|preview)/.test(t) && /browser only|Demo preview/.test(t)) { p.textContent = 'Luxury Travel Institute · records on this page are stored in the agency database.'; p.setAttribute('data-live', 'footer'); }
+    else if (/kept in this browser only/.test(t)) p.textContent = 'Files are stored privately on the agency server. Only staff with access to the trip can download them. Client-visible documents appear in the client portal; internal ones never do.'; }); }
 export async function installAdapter(user: User) {
   installStorageGuard('lti-proto-r26');
   me = user;
@@ -133,11 +144,13 @@ export async function installAdapter(user: User) {
   w.lcPage = (p: number) => { LC.page = p; lcLoad(); };
   w.sfToggle = async (id: number, active: number) => { try { await call('PATCH', '/staff/' + id, { isActive: !!active }); toast(active ? 'Account reactivated' : 'Account deactivated'); sfLoad(); } catch (e) { toast(e instanceof ApiError ? e.message : 'Failed'); } };
   w.sfReset = async (id: number) => { try { const r = await call<{ resetUrl: string }>('POST', `/staff/${id}/reset-link`); dlg('One-time password reset link', `<p>Give this link to the staff member through a trusted channel. It works once and expires in 60 minutes.</p><input readonly aria-label="Reset link" value="${h(r.resetUrl)}" onfocus="this.select()">`, null); } catch (e) { toast(e instanceof ApiError ? e.message : 'Failed'); } };
-  const origDraw = w.draw; w.draw = function () { origDraw(); banner(); afterDraw(); afterDraw4(); afterDraw4b(); };
+  const origDraw = w.draw; w.draw = function () { origDraw(); banner(); afterDraw(); afterDraw4(); afterDraw4b(); fixClaims(); };
   if (location.hash.startsWith('#/') || !location.hash) location.hash = 'dashboard';
   const fromHash = () => { const m = location.hash.match(/^#lcontact-(\d+)$/); if (m) { LD.id = Number(m[1]); LD.err = ''; S.pg = 'lcontact'; return true; } return false; };
   window.addEventListener('hashchange', () => { if (fromHash()) draw(); });
   if (!fromHash()) { const p = location.hash.slice(1); S.pg = Pg[p] ? p : 'dashboard'; }
-  try { await installTrips(user, can); await installPhase4(can); await installPhase4b(can, user.id); await installPhone(can); } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
+  try { await installTrips(user, can); await installPhase4(can); await installPhase4b(can, user.id); await installPhone(can); installUnavailable(); installFinance(can); installOps(can, user.id); installComms(can); installLibrary(can); installAdmin(can, user.role);
+    // Mobile fix (DEF): segmented tab strips (e.g. Team, Roles) widened the page on phones; let them scroll within themselves.
+    if (!document.getElementById('lti-fixes')) { const st = document.createElement('style'); st.id = 'lti-fixes'; st.textContent = '@media (max-width: 640px) { .seg { max-width: 100%; overflow-x: auto; } }'; document.head.append(st); } } catch (e) { toast('Trips could not be loaded: ' + (e instanceof ApiError ? e.message : 'network error')); }
   w.__LTI_LIVE = true; draw();
 }

@@ -169,8 +169,8 @@ function applyTemplate(t: any) {
   if (t.kind === 'activity') { const a = { id: 'dl' + t.id, db: t.id, type: ACT_TYPES[b.type] ? b.type : 'tour', title: t.title, desc: b.description || '', loc: b.location || '', price: Number(b.price) || 0, supplier: b.supplier || '', f: b.f || {}, img: '', folderId: t.folderId, tags: t.tags || [] }; X.lib.unshift(a); lKey['a' + t.id] = actSig(a); }
   if (t.kind === 'checklist') { const p = { id: 'dp' + t.id, db: t.id, n: t.title, items: (b.items || []).map(String) }; X.packing.push(p); lKey['p' + t.id] = packSig(p); }
 }
-async function loadLibrary() { if (!can('library.view')) return; FOLDERS = (await call<any>('GET', '/library/folders')).items; X.lib = X.lib.filter((x: any) => !x.db); X.packing = X.packing.filter((x: any) => !x.db); (await call<any>('GET', '/library/templates')).items.forEach(applyTemplate); }
-async function reloadFolders() { FOLDERS = (await call<any>('GET', '/library/folders')).items; }
+async function loadLibrary() { if (!can('library.view')) return; FOLDERS = (await call<any>('GET', '/library/folders?section=general')).items; X.lib = []; X.packing = []; /* only database records are shown; Revision 27 samples were migrated (origin=revision27) */ (await call<any>('GET', '/library/templates')).items.forEach(applyTemplate); }
+async function reloadFolders() { FOLDERS = (await call<any>('GET', '/library/folders?section=general')).items; }
 let libBusy = false;
 async function syncLibrary() {
   if (libBusy || !can('library.manage')) return; libBusy = true;
@@ -195,7 +195,7 @@ function activityDialog(t?: any) {
 /* =============================== LABELS / INSTALL =============================== */
 export function note4b(): string | null | undefined {
   if (S.pg === 'groups' || S.pg === 'forms') return 'live';
-  if (S.pg === 'content') return 'Activity templates (with folders) and Packing lists are live database records. Destination guides, Task templates and More libraries remain prototype sample data until Phase 6.';
+  if (S.pg === 'content') return 'live';
   return undefined;
 }
 const withDb = (fn: () => string) => { const t = S.trips, f = X.forms, r = X.responses, l = X.lib, p = X.packing;

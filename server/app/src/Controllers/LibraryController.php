@@ -3,25 +3,27 @@ declare(strict_types=1);
 namespace LTI\Controllers;
 use LTI\{Auth, Audit, Db, Http, HttpError, Validate};
 final class LibraryController {
-    const KINDS = ['itinerary', 'activity', 'checklist', 'supplier_info', 'document', 'guide'];
+    const KINDS = ['itinerary', 'activity', 'checklist', 'supplier_info', 'document', 'guide', 'task', 'workflow_reference'];
+    const SECTIONS = ['general', 'itinerary', 'photos', 'tasks', 'workflows'];
     private static function folder(int $id): array { $f = Db::one('SELECT * FROM content_folders WHERE id=?', [$id]); if (!$f) throw new HttpError(404, 'Folder not found'); return $f; }
     private static function tpl(int $id): array { $t = Db::one('SELECT t.*, u.full_name updater FROM content_templates t LEFT JOIN users u ON u.id=t.updated_by WHERE t.id=?', [$id]); if (!$t) throw new HttpError(404, 'Template not found'); return $t; }
-    private static function out(array $t): array { return ['id' => (int)$t['id'], 'folderId' => $t['folder_id'] === null ? null : (int)$t['folder_id'], 'kind' => $t['kind'], 'title' => $t['title'], 'summary' => $t['summary'], 'body' => json_decode($t['body_json'], true),
+    private static function out(array $t): array { return ['origin' => $t['origin'] ?? null, 'id' => (int)$t['id'], 'folderId' => $t['folder_id'] === null ? null : (int)$t['folder_id'], 'kind' => $t['kind'], 'title' => $t['title'], 'summary' => $t['summary'], 'body' => json_decode($t['body_json'], true),
         'tags' => $t['tags_json'] ? json_decode($t['tags_json'], true) : [], 'status' => $t['status'], 'version' => (int)$t['version'], 'updatedAt' => $t['updated_at'], 'updatedBy' => $t['updater'] ?? null,
         'usageCount' => (int)Db::one('SELECT COUNT(*) n FROM content_template_usage WHERE template_id=?', [$t['id']])['n']]; }
-    public static function folders(): array { Auth::require('library.view'); return ['items' => array_map(function ($r) { return ['id' => (int)$r['id'], 'name' => $r['name'], 'parentId' => $r['parent_id'] === null ? null : (int)$r['parent_id'], 'templateCount' => (int)$r['n']]; },
-        Db::all("SELECT f.*, (SELECT COUNT(*) FROM content_templates t WHERE t.folder_id=f.id AND t.status='active') n FROM content_folders f ORDER BY f.name"))]; }
+    public static function folders(): array { Auth::require('library.view'); $sec = (string)($_GET['section'] ?? ''); if ($sec !== '') Validate::enum(['s' => $sec], 's', self::SECTIONS);
+        return ['items' => array_map(function ($r) { return ['id' => (int)$r['id'], 'name' => $r['name'], 'section' => $r['section'], 'origin' => $r['origin'], 'parentId' => $r['parent_id'] === null ? null : (int)$r['parent_id'], 'templateCount' => (int)$r['n']]; },
+        Db::all("SELECT f.*, (SELECT COUNT(*) FROM content_templates t WHERE t.folder_id=f.id AND t.status='active') n FROM content_folders f" . ($sec !== '' ? ' WHERE f.section=' . Db::pdo()->quote($sec) : '') . " ORDER BY f.name"))]; }
     private static function parent(array $d, ?int $self): ?int {
         if (!array_key_exists('parentId', $d) || $d['parentId'] === null || $d['parentId'] === '') return null;
         $pid = (int)$d['parentId']; self::folder($pid);
         for ($x = $pid, $guard = 0; $x !== null && $guard < 50; $guard++) { if ($self !== null && $x === $self) throw new HttpError(422, 'A folder cannot be moved inside itself'); $r = Db::one('SELECT parent_id FROM content_folders WHERE id=?', [$x]); $x = $r && $r['parent_id'] !== null ? (int)$r['parent_id'] : null; }
         return $pid;
     }
-    private static function uniqueName(string $name, ?int $parent, int $except): void { if (Db::one('SELECT id FROM content_folders WHERE name=? AND ' . ($parent === null ? 'parent_id IS NULL' : 'parent_id=' . $parent) . ' AND id<>?', [$name, $except])) throw new HttpError(409, 'A folder with this name already exists here'); }
-    public static function createFolder(): array { $u = Auth::require('library.manage'); $d = Http::body(); $name = Validate::str($d, 'name', 120, true); $p = self::parent($d, null); self::uniqueName($name, $p, 0);
-        $id = Db::insert('INSERT INTO content_folders (name,parent_id,created_by,created_at,updated_at) VALUES (?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())', [$name, $p, (int)$u['id']]); Audit::log((int)$u['id'], 'library.folder_created', 'folder', $id); return ['folder' => ['id' => $id, 'name' => $name, 'parentId' => $p]]; }
+    private static function uniqueName(string $name, ?int $parent, int $except, string $section = 'general'): void { if (Db::one('SELECT id FROM content_folders WHERE section=' . Db::pdo()->quote($section) . ' AND name=? AND ' . ($parent === null ? 'parent_id IS NULL' : 'parent_id=' . $parent) . ' AND id<>?', [$name, $except])) throw new HttpError(409, 'A folder with this name already exists here'); }
+    public static function createFolder(): array { $u = Auth::require('library.manage'); $d = Http::body(); $name = Validate::str($d, 'name', 120, true); $p = self::parent($d, null); $sec = Validate::enum($d, 'section', self::SECTIONS, $p ? self::folder($p)['section'] : 'general'); self::uniqueName($name, $p, 0, $sec);
+        $id = Db::insert('INSERT INTO content_folders (name,parent_id,section,created_by,created_at,updated_at) VALUES (?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP())', [$name, $p, $sec, (int)$u['id']]); Audit::log((int)$u['id'], 'library.folder_created', 'folder', $id); return ['folder' => ['id' => $id, 'name' => $name, 'parentId' => $p]]; }
     public static function updateFolder(array $pa): array { $u = Auth::require('library.manage'); $f = self::folder((int)$pa['id']); $d = Http::body(); $name = array_key_exists('name', $d) ? Validate::str($d, 'name', 120, true) : $f['name'];
-        $p = array_key_exists('parentId', $d) ? self::parent($d, (int)$f['id']) : ($f['parent_id'] === null ? null : (int)$f['parent_id']); self::uniqueName($name, $p, (int)$f['id']);
+        $p = array_key_exists('parentId', $d) ? self::parent($d, (int)$f['id']) : ($f['parent_id'] === null ? null : (int)$f['parent_id']); self::uniqueName($name, $p, (int)$f['id'], $f['section']);
         Db::exec('UPDATE content_folders SET name=?, parent_id=?, updated_at=UTC_TIMESTAMP() WHERE id=?', [$name, $p, $f['id']]); Audit::log((int)$u['id'], 'library.folder_updated', 'folder', $f['id']); return ['folder' => ['id' => (int)$f['id'], 'name' => $name, 'parentId' => $p]]; }
     public static function deleteFolder(array $pa): array { $u = Auth::require('library.manage'); $f = self::folder((int)$pa['id']);
         if (Db::one('SELECT id FROM content_templates WHERE folder_id=? LIMIT 1', [$f['id']]) || Db::one('SELECT id FROM content_folders WHERE parent_id=? LIMIT 1', [$f['id']])) throw new HttpError(409, 'Move or archive the folder’s contents first');
@@ -79,4 +81,7 @@ final class LibraryController {
         });
         return ['ok' => true, 'activityId' => $actId];
     }
+    /** Admin-only: import the Revision 27 library snapshot. dryRun reports what would be imported without writing. */
+    public static function importRevision27(): array { $u = Auth::require('library.manage'); if (!Auth::can('staff.manage')) throw new HttpError(403, 'Only administrators can run the library import');
+        return \LTI\LibraryImport::run(!empty(Http::body()['dryRun']), (int)$u['id']); }
 }

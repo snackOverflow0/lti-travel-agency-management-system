@@ -73,8 +73,15 @@ final class BookingController {
         Db::exec('DELETE FROM booking_travelers WHERE booking_id=?', [$bid]);
         foreach ($ids as $c) Db::exec('INSERT INTO booking_travelers (booking_id, contact_id) VALUES (?,?)', [$bid, $c]);
     }
+    /** Agency booking controls (Settings): required fields are enforced when a booking is confirmed. */
+    private static function enforceRequired(array $f, array $d, ?array $cur): void { $req = SettingsController::bookingRequired(); if (!$req || ($f['status'] ?? ($cur['status'] ?? '')) !== 'confirmed') return; $miss = [];
+        if (in_array('confirmationNumber', $req, true) && trim((string)($f['confirmation_number'] ?? '')) === '') $miss['confirmationNumber'] = 'Required by agency booking controls';
+        if (in_array('supplier', $req, true) && empty($f['supplier_id'])) $miss['supplierId'] = 'Required by agency booking controls';
+        if (in_array('amount', $req, true) && (string)($f['amount'] ?? '') === '') $miss['amount'] = 'Required by agency booking controls';
+        if (in_array('travelers', $req, true)) { $ids = isset($d['travelerIds']) && is_array($d['travelerIds']) ? $d['travelerIds'] : ($cur ? array_column(Db::all('SELECT contact_id FROM booking_travelers WHERE booking_id=?', [$cur['id']]), 'contact_id') : []); if (!$ids) $miss['travelerIds'] = 'Required by agency booking controls'; }
+        if ($miss) throw new HttpError(422, 'Agency booking controls require more details before confirming', $miss); }
     public static function create(): array {
-        $u = Auth::require('bookings.manage'); $d = Http::body(); $f = self::fields($u, $d, null); if (!isset($f['agent_id'])) $f['agent_id'] = (int)$u['id'];
+        $u = Auth::require('bookings.manage'); $d = Http::body(); $f = self::fields($u, $d, null); if (!isset($f['agent_id'])) $f['agent_id'] = (int)$u['id']; self::enforceRequired($f, $d, null);
         $id = Db::tx(function () use ($f, $d, $u) {
             $cols = array_keys($f);
             $id = Db::insert('INSERT INTO bookings (' . implode(',', $cols) . ', reference, created_by, created_at, updated_at, version) VALUES (' . implode(',', array_fill(0, count($cols), '?')) . ',?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),1)', array_merge(array_values($f), ['TMP-' . bin2hex(random_bytes(8)), (int)$u['id']]));
@@ -90,7 +97,7 @@ final class BookingController {
         $u = Auth::require('bookings.manage'); $cur = self::find($u, (int)$pa['id']); $d = Http::body();
         if ($cur['status'] === 'cancelled') throw new HttpError(409, 'Cancelled bookings cannot be edited');
         if (isset($d['version']) && (int)$d['version'] !== (int)$cur['version']) throw new HttpError(409, 'This booking was changed by someone else. Reload and try again.');
-        $f = self::fields($u, $d, $cur); $sets = implode(',', array_map(function ($c) { return "$c=?"; }, array_keys($f)));
+        $f = self::fields($u, $d, $cur); self::enforceRequired($f, $d, $cur); $sets = implode(',', array_map(function ($c) { return "$c=?"; }, array_keys($f)));
         Db::tx(function () use ($sets, $f, $cur, $d, $u) {
             Db::exec("UPDATE bookings SET $sets, updated_at=UTC_TIMESTAMP(), version=version+1 WHERE id=?", array_merge(array_values($f), [(int)$cur['id']]));
             if (isset($d['travelerIds']) && is_array($d['travelerIds'])) self::setTravelersFor((int)$cur['id'], $f['trip_id'], $d['travelerIds']);

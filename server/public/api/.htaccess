@@ -1,3 +1,11 @@
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php?r=/$1 [QSA,L]
+
+# The API sets its own stricter security headers in PHP; remove the site-wide copies so each header appears once.
+<IfModule mod_headers.c>
+  Header always unset Content-Security-Policy
+  Header always unset X-Frame-Options
+  Header always unset Referrer-Policy
+  Header always unset X-Content-Type-Options
+</IfModule>

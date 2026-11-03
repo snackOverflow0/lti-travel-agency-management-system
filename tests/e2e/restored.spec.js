@@ -2,13 +2,13 @@
 const { chromium } = require(process.env.PW || 'playwright');
 const { execSync } = require('child_process');
 const BASE = process.env.BASE || 'http://127.0.0.1:8000/';
-const sql = q => execSync(`mysql -uroot -N -e "${q.replace(/"/g, '\\"')}" lti_test`).toString().trim();
+const sql = q => execSync(`mysql -uroot -N -e "${q.replace(/"/g, '\\"')}" ${process.env.DB || 'lti_test'}`).toString().trim();
 const results = []; let browser;
 const A = (c, m) => { if (!c) throw new Error(m); };
 const S = async (label, pr) => { try { return await pr; } catch (e) { throw new Error(label + ': ' + String(e.message).split('\n')[0]); } };
 async function T(name, fn, vp) { const ctx = await browser.newContext({ viewport: vp || { width: 1366, height: 900 }, reducedMotion: 'reduce' }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   let ok = false, d = ''; try { d = (await fn(p, ctx)) || ''; ok = !errs.length; if (errs.length) d += ' JSERR ' + errs.slice(0, 3).join('|'); } catch (e) { d = String(e.message).split('\n')[0]; }
-  results.push({ name, ok, detail: d }); console.log((ok ? 'PASS ' : 'FAIL ') + name + ' — ' + d); await ctx.close(); }
+  results.push({ name, ok, detail: d }); console.log((ok ? 'PASS ' : 'FAIL ') + name + ' — ' + d); if (process.env.SHOTS) { try { await p.screenshot({ path: process.env.SHOTS + '/' + (process.env.SUITE || 'e2e') + '-' + String(results.length).padStart(2, '0') + '.png' }); } catch (e) { } } await ctx.close(); }
 async function login(p, email, pw = 'Dev-Password-2026') { if (!/#\/login/.test(p.url())) await p.goto(BASE + '#/login'); await S('login form', p.waitForSelector('#em')); await p.fill('#em', email); await p.fill('#pw', pw); await p.click('button:has-text("Sign in")'); }
 const ready = p => S('interface boot', p.waitForFunction(() => window.__LTI_LIVE, null, { timeout: 15000 }));
 (async () => { browser = await chromium.launch({ executablePath: process.env.CHROME });
@@ -19,7 +19,7 @@ await T('Opening http://127.0.0.1:8000/ shows sign-in; after login the full Revi
   A(await p.locator('#spl').count() === 1, 'softphone launcher'); return '11 sections: ' + nav.join(', '); });
 await T('Every restored page renders without errors (owner); prototype pages labelled, live pages not', async p => {
   await login(p, 'owner@lti.test'); await ready(p);
-  const r = await p.evaluate(() => { const bad = [], unl = [], keys = Object.keys(Pg); for (const k of keys) { try { if (k == 'client') S.cc = 'c1'; if (k == 'trip') S.cur = 't1'; if (k == 'lcontact') continue; go(k); const live = ['contacts', 'staff', 'trips', 'itinerary', 'bookings', 'suppliers', 'docs', 'groups', 'forms', 'calls', 'callhist', 'callan', 'voicemail', 'callset']; if (!live.includes(k) && !document.querySelector('#m .proto-note') && X.role != 'Traveler') unl.push(k); if (live.includes(k) && document.querySelector('#m .proto-note')) unl.push('LIVE-labelled:' + k) } catch (e) { bad.push(k + ':' + e.message) } } return { n: keys.length, bad, unl } });
+  const r = await p.evaluate(() => { const bad = [], unl = [], keys = Object.keys(Pg); for (const k of keys) { try { if (k == 'client') S.cc = 'c1'; if (k == 'trip') S.cur = 't1'; if (k == 'lcontact') continue; go(k); const live = ['contacts', 'staff', 'trips', 'itinerary', 'bookings', 'suppliers', 'docs', 'groups', 'forms', 'calls', 'callhist', 'callan', 'voicemail', 'callset', 'smart', 'recordings', 'payments', 'invoices', 'commission', 'cominv', 'reporting', 'reporting2', 'dashboard', 'tasks', 'calendar', 'notifications', 'emails', 'outbox', 'emt', 'automations', 'autobuild', 'autoed', 'workflows', 'libwf', 'libit', 'libph', 'libcr', 'libta', 'libau', 'libt', 'libd', 'content', 'agency', 'settings', 'tags', 'controls', 'roles', 'team', 'terms', 'trav', 'hsup', 'integ', 'ai', 'scheduling', 'libca', 'libch', 'rpcl', 'rpq', 'tpl', 'tact', 'library', 'libem', 'libfo', 'libsu', 'comm', 'client', 'preview', 'rpc', 'rpview', 'help']; if (!live.includes(k) && !document.querySelector('#m .proto-note') && X.role != 'Traveler') unl.push(k); if (live.includes(k) && document.querySelector('#m .proto-note')) unl.push('LIVE-labelled:' + k) } catch (e) { bad.push(k + ':' + e.message) } } return { n: keys.length, bad, unl } });
   A(!r.bad.length, 'errors ' + r.bad.join(';')); A(!r.unl.length, 'label problems ' + r.unl.join(',')); return r.n + ' pages rendered and correctly labelled'; });
 await T('Trip sections, tabbed pages and views render (prototype level)', async p => {
   await login(p, 'owner@lti.test'); await ready(p);
@@ -62,10 +62,10 @@ await T('Advisor sees only assigned database contacts; another advisor’s conta
 await T('Traveler account sees only the traveler portal and can sign out', async p => {
   await login(p, 'traveler@lti.test'); await ready(p); A(await p.evaluate(() => S.pg === 'portal'), 'not portal'); A(/Traveler portal/.test(await p.locator('#top').innerText()), 'top');
   await p.click('#top button:has-text("Sign out")'); await S('signed out', p.waitForSelector('h1:has-text("Sign in to LTI")')); return 'portal only'; });
-await T('Prototype modules stay interactive: create a trip, run the automation clock, open the softphone', async p => {
+await T('Modules stay interactive: create a trip, live automations (no simulated clock), open the softphone', async p => {
   await login(p, 'owner@lti.test'); await ready(p); await p.click('nav.tn a:has-text("Trips")'); await p.click('#m button:has-text("New trip")'); await p.fill('#a1', 'Restoration test trip'); await p.click('#ov .btn.g1');
   await S('trip page', p.waitForSelector('#m input[aria-label="Trip name"]')); A(await p.evaluate(() => S.trips.some(t => t.n == 'Restoration test trip')), 'trip');
-  await p.evaluate(() => go('automations')); await p.click('#m button:has-text("+1 day")'); A(await p.evaluate(() => X.today == '2026-11-01'), 'clock');
+  await p.evaluate(() => go('automations')); await S('live automations', p.waitForSelector('#m button:has-text("New workflow")')); A(!(await p.locator('#m button:has-text("+1 day")').count()), 'simulated automation clock still present');
   await p.click('#spl'); A(await p.evaluate(() => document.querySelector('#sp').classList.contains('open')), 'softphone'); return 'prototype interactions intact'; });
 await T('Mobile 390px: restored interface usable (drawer, dashboard, live contacts) with no horizontal overflow', async p => {
   await login(p, 'owner@lti.test'); await ready(p); const sw1 = await p.evaluate(() => document.documentElement.scrollWidth); await p.click('button.hb'); await p.locator('#ov a', { hasText: 'Contacts' }).first().click();

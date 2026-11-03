@@ -8,6 +8,9 @@ Staff sign-in/out, secure sessions, CSRF, login rate limiting, eight roles with 
 ## Phase 1 frontend restoration
 After sign-in, the React shell boots the complete Revision 27 interface (`web/public/prototype/lti-prototype.js`, unchanged code) and `web/src/prototype/adapter.ts` connects it to the API: real role, sign-out, live **Contacts** (database tab), live **Staff accounts**. Every other page shows a “Prototype module” label and runs on browser-local sample data until its backend phase.
 
+## Phase 8 (final QA)
+Release status **NOT APPROVED**: see `docs/SCORECARD.md`. Apply `009_phase8.sql` (indexes). Production template: `server/app/config/config.production.example.php`. Deployment, backup, rollback and UAT guides are in `docs/`.
+
 ## Phase 7 (softphone and call management)
 Apply `server/app/migrations/008_phase7.sql`, then **Calls › Settings › Sync contact phone numbers** once. The restored softphone and call pages are live: external dialing (tel: handoff), manual call logging, notes, outcomes, callbacks (tasks + reminders), history, reports. PSTN calling, recording, voicemail and live call controls are unavailable and shown as such. See `docs/PHASE7_*.md`.
 

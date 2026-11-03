@@ -2,14 +2,14 @@
 const { chromium } = require(process.env.PW || 'playwright');
 const { execSync } = require('child_process'); const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:8000/';
-const sql = q => execSync(`mysql --default-character-set=utf8mb4 -uroot -N -e "${q.replace(/"/g, '\\"')}" lti_test`).toString().trim();
+const sql = q => execSync(`mysql --default-character-set=utf8mb4 -uroot -N -e "${q.replace(/"/g, '\\"')}" ${process.env.DB || 'lti_test'}`).toString().trim();
 const results = []; let browser; const st = {};
 const A = (c, m) => { if (!c) throw new Error(m); };
 const S = async (label, pr) => { try { return await pr; } catch (e) { throw new Error(label + ': ' + String(e.message).split('\n')[0]); } };
 const waitDb = async (label, q, ok, ms = 12000) => { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { v = sql(q); if (ok(v)) return v; await new Promise(r => setTimeout(r, 300)); } throw new Error(label + ': database value ' + JSON.stringify(v)); };
 async function T(name, fn, vp) { const ctx = await browser.newContext({ viewport: vp || { width: 1366, height: 900 }, reducedMotion: 'reduce' }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   let ok = false, d = ''; try { d = (await fn(p, ctx)) || ''; ok = !errs.length; if (errs.length) d += ' JSERR ' + errs.slice(0, 3).join('|'); } catch (e) { d = String(e.message).split('\n')[0]; }
-  results.push({ name, ok, detail: d }); console.log((ok ? 'PASS ' : 'FAIL ') + name + ' — ' + d); await ctx.close(); }
+  results.push({ name, ok, detail: d }); console.log((ok ? 'PASS ' : 'FAIL ') + name + ' — ' + d); if (process.env.SHOTS) { try { await p.screenshot({ path: process.env.SHOTS + '/' + (process.env.SUITE || 'e2e') + '-' + String(results.length).padStart(2, '0') + '.png' }); } catch (e) { } } await ctx.close(); }
 async function login(p, email) { await p.goto(BASE + '#/login'); await S('login form', p.waitForSelector('#em')); await p.fill('#em', email); await p.fill('#pw', 'Dev-Password-2026'); await p.click('button:has-text("Sign in")'); await S('boot', p.waitForFunction(() => window.__LTI_LIVE, null, { timeout: 15000 })); }
 const openGroup = async (p, tab) => { await p.evaluate(g => { X.ui.grp = 'd' + g; go('groups'); }, st.g); await S('group page', p.waitForSelector('#m button:has-text("Edit group")')); if (tab) { await p.click(`#m .tabs button:has-text("${tab}")`); } };
 const addAct = async (p, day, type, title) => { await p.locator('.dayc').nth(day).locator('button:has-text("Add activity")').click(); await p.locator(`.dayc .dd a:has-text("${type}")`).first().click(); await S('activity dialog', p.waitForSelector('#ov #ea1')); await p.fill('#ea1', title); await p.click('#ov .btn.g1'); };
@@ -76,7 +76,7 @@ await T('TC19–TC20 Publish; public link submission without sign-in; response s
   await p.evaluate(f => { X.ui.form = 'df' + f; go('forms'); }, st.form); await p.click('#m button:has-text("Archive")'); await waitDb('archive', `SELECT status FROM forms WHERE id=${st.form}`, v => v === 'archived');
   return 'public submission ' + sid + ' stored with answers and contact; linked to trip; CSV; duplicate; archive'; });
 await T('TC25–TC26 Content library: folders, activity templates (create, edit, duplicate, move), use on a trip; packing list', async p => {
-  await login(p, 'advisor@lti.test'); await p.evaluate(() => go('content')); A(/Activity templates \(with folders\)/.test(await p.locator('#m .proto-note').innerText()), 'content label');
+  await login(p, 'advisor@lti.test'); await p.evaluate(() => go('content')); A(!(await p.locator('#m .proto-note').count()), 'content hub still labelled prototype');
   await p.click('#m button:has-text("New folder")'); await p.fill('#lf1', 'Europe'); await p.click('#ov .btn.g1'); st.fold = await waitDb('folder', "SELECT id FROM content_folders WHERE name='Europe'", v => !!v);
   await S('folder selected', p.waitForSelector('#m button:has-text("Rename or move")')); await p.click('#m button:has-text("Rename or move")'); await p.fill('#lf1', 'Europe 2027'); await p.click('#ov .btn.g1'); await waitDb('rename', `SELECT name FROM content_folders WHERE id=${st.fold}`, v => v === 'Europe 2027');
   await p.click('#m button[onclick="libAdd()"]'); await p.fill('#la2', 'Melk Abbey visit'); await p.fill('#la3', 'Melk, Austria'); await p.click('#ov .btn.g1');

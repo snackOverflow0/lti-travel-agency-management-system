@@ -1,0 +1,41 @@
+# LTI web root (Apache). Requires mod_headers for headers; other blocks degrade gracefully.
+Options -Indexes
+DirectoryIndex index.html
+
+# --- HTTPS: enable ONLY after the SSL certificate is confirmed working on this domain ---
+# RewriteEngine On
+# RewriteCond %{HTTPS} !=on
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<IfModule mod_headers.c>
+  Header always unset X-Powered-By
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  # 'unsafe-inline' is required by the approved Revision 27 frontend (inline handlers and styles). Everything else is same-origin only.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+  # Enable together with the HTTPS redirect above:
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <If "%{REQUEST_URI} =~ m#^/(.*/)?assets/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  <If "%{REQUEST_URI} =~ m#/prototype/#">
+    Header set Cache-Control "no-cache"
+  </If>
+</IfModule>
+
+# Never serve dotfiles, backups, source maps, logs, SQL, config or scripts from the web root.
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.(sql|log|ini|env|bak|old|orig|swp|sh|ps1|md|map|zip|tar|gz|json\.dist|lock)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript application/json image/svg+xml
+</IfModule>

@@ -1,0 +1,47 @@
+[
+ {
+  "name": "Dashboard: live figures equal the API and MySQL (owner and advisor); no prototype label",
+  "ok": true,
+  "detail": "owner 4 contacts (= SQL), advisor 1 (scoped); finance KPIs shown to owner"
+ },
+ {
+  "name": "Quote: create with lines and discount (server total), send, accept, convert to invoice — verified in MySQL",
+  "ok": true,
+  "detail": "quote 1: 2700.00 − 270.00 = 2430.00 (server); sent → accepted → invoice 1"
+ },
+ {
+  "name": "Invoice: advisor issues (no payment controls); finance records payment through the screen; balance in MySQL, after refresh and re-login",
+  "ok": true,
+  "detail": "INV-2026-00001 issued by advisor (no payment buttons shown to advisor); finance recorded 1000.00 → balance 1430.00 (partially paid) in MySQL, after refresh and re-login; labelled unverified"
+ },
+ {
+  "name": "Finance user verifies and reverses the payment; balance restored",
+  "ok": true,
+  "detail": "confirmed by staff (label updated, Verify no longer offered), then reversed: balance back to 2430.00"
+ },
+ {
+  "name": "Supplier payable: create and pay through the screen",
+  "ok": true,
+  "detail": "payable 1500.00 created; 500.00 paid → 500.00|partially_paid"
+ },
+ {
+  "name": "Commission: overview figures from server; rule added through the screen; audit log verifies",
+  "ok": true,
+  "detail": "rule stored percent|12.0000|40.0000|cruise; financial log listed and verified intact"
+ },
+ {
+  "name": "Reports: live report rows equal the API; CSV export",
+  "ok": true,
+  "detail": "balances: 1 rows = API; CSV lti-balances-20261102.csv; Report builder tab still labelled prototype: false"
+ },
+ {
+  "name": "Access: a role without finance access sees Restricted; no finance data in its API calls",
+  "ok": true,
+  "detail": "Payments, Commission, Reporting restricted; /api/invoices 403"
+ },
+ {
+  "name": "Mobile 390px: Payments tabs and invoice dialog fit",
+  "ok": true,
+  "detail": "no page overflow; dialog within 390px"
+ }
+]

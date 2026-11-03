@@ -1,0 +1,47 @@
+[
+ {
+  "name": "No route shows any “browser only” / demo-prototype claim anywhere on the page (owner, every page)",
+  "ok": true,
+  "detail": "73 routes checked; 0 with the old warning; labelled not available: ai, calls, callset, cominv, integ, libca, libch, recordings, rpcl, rpq, scheduling, tact, tpl, voicemail"
+ },
+ {
+  "name": "Settings: edit agency details and regional settings through the screen; MySQL; persists after refresh",
+  "ok": true,
+  "detail": "agency address/email and week start saved and shown after refresh"
+ },
+ {
+  "name": "Advisor sees settings read-only (server also refuses changes)",
+  "ok": true,
+  "detail": "fields disabled; no save button"
+ },
+ {
+  "name": "Booking controls through the screen are stored and enforced",
+  "ok": true,
+  "detail": "stored [\"confirmationNumber\"]; confirming without a confirmation number → no booking"
+ },
+ {
+  "name": "Roles: owner edits a permission through the matrix; stored; restored",
+  "ok": true,
+  "detail": "owner column locked; sales calls.use removed then restored via the screen"
+ },
+ {
+  "name": "Terms: publish through the screen; client portal API shows them",
+  "ok": true,
+  "detail": "published; traveler receives the text"
+ },
+ {
+  "name": "Travelers, support request and integrations pages use real data",
+  "ok": true,
+  "detail": "travelers page; support request → task; integrations show real status"
+ },
+ {
+  "name": "Duplicate pages route to their live modules",
+  "ok": true,
+  "detail": "{\"libem\":\"ok\",\"libfo\":\"ok\",\"libsu\":\"ok\",\"comm\":\"ok\",\"library\":\"ok\",\"client\":\"ok\"}"
+ },
+ {
+  "name": "Mobile 390px: settings, roles, travelers fit",
+  "ok": true,
+  "detail": "[0,0,0,0,0]"
+ }
+]

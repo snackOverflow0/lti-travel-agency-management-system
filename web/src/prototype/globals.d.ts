@@ -9,3 +9,6 @@ declare const STATUS_LEGACY: any; declare function fdr(a: string, b: string): st
 declare function guard(p: string): boolean; declare function logA(...a: any[]): void; declare const TSEC: any[];
 declare const FTYPES: any[]; declare const ACT_TYPES: any; declare function fd(s: string): string; declare function kpi(...a: any[]): string;
 declare function spOpen(v?: number): void;
+declare function csv(head: unknown[], rows: unknown[][]): string;
+declare function dlFile(name: string, content: string): void;
+declare const __LTI_PROTO_VERSION__: string;

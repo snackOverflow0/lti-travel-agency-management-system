@@ -4,6 +4,7 @@ namespace LTI\Controllers;
 use LTI\{Auth, Audit, Db, Http, HttpError, Session};
 final class AuthController {
     public static function login(): array {
+        if (!empty($GLOBALS['LTI_CFG']['require_https']) && !\LTI\Http::isHttps()) throw new HttpError(403, 'Sign-in requires a secure (HTTPS) connection.');
         $d = Http::body();
         $u = Auth::login((string)($d['email'] ?? ''), (string)($d['password'] ?? ''));
         return ['user' => Auth::publicUser($u), 'csrf' => Session::csrf()];

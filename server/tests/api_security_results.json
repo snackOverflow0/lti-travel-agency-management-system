@@ -1,0 +1,72 @@
+[
+    [
+        "SEC-T01 Every API route refuses unauthenticated requests",
+        true,
+        "210 protected routes all returned 401\/403 without a session"
+    ],
+    [
+        "SEC-T02 CSRF: state-changing requests without or with a wrong token are refused",
+        true,
+        "{\"contact create, no token\":403,\"task, no token\":403,\"call, no token\":403,\"wrong token\":403}"
+    ],
+    [
+        "SEC-T03 Sessions: forged cookie and logged-out session refused; cookie flags set",
+        true,
+        "forged 401; after logout 401; Set-Cookie HttpOnly + SameSite=Lax (Secure is added automatically under HTTPS)"
+    ],
+    [
+        "SEC-T04 SQL injection payloads in search and filters cause no errors or data leaks",
+        true,
+        "35 payloads across 7 search endpoints: no error, no leak, no delay; payload stored as plain text"
+    ],
+    [
+        "SEC-T00 Fixture: real supplier, booking, internal and client-visible documents created through the API",
+        true,
+        "{\"booking\":1,\"doc_internal\":1,\"doc_client\":2}"
+    ],
+    [
+        "SEC-T05 Staff access control: another advisor cannot reach real records across modules (owner positive control)",
+        true,
+        "owner 200 on all 7; advisor2: {\"\\\/contacts\\\/2\":404,\"\\\/trips\\\/1\":404,\"\\\/bookings\\\/1\":404,\"\\\/documents\\\/1\":404,\"\\\/documents\\\/1\\\/download\":404,\"\\\/activity?entityType=contact&entityId=2\":404,\"\\\/contacts\\\/2\\\/phones\":404,\"PUT trip\":404,\"PUT booking\":404}"
+    ],
+    [
+        "SEC-T06 Client isolation: another traveler cannot reach a client\u2019s trips or documents (owner positive control); no staff endpoints",
+        true,
+        "traveler1 downloads own client document (200) but not the internal one (404); {\"trv2 -> trip\":404,\"trv2 -> client doc\":404,\"trv2 approve\":404,\"trv \\\/contacts\":403,\"trv \\\/trips\":403,\"trv \\\/invoices\":403,\"trv \\\/calls\":403,\"trv \\\/tasks\":403,\"trv \\\/staff\":403,\"trv \\\/documents\\\/2\":403}"
+    ],
+    [
+        "SEC-T07 Privilege escalation refused",
+        true,
+        "{\"advisor PATCH own role\":403,\"finance staff list\":403,\"advisor reset link\":403,\"advisor workflows\":403,\"advisor void\":403}"
+    ],
+    [
+        "SEC-T08 Unsafe uploads refused; stored files are outside the web root",
+        true,
+        "{\"shell.pdf\":415,\"shell.phtml\":415,\"shell.php.pdf\":422,\"x.svg\":415,\".htaccess\":415,\"x.exe\":415}; storage outside public\/"
+    ],
+    [
+        "SEC-T09 Sign-in rate limiting",
+        true,
+        "locked after 6 attempts; correct password also refused while locked"
+    ],
+    [
+        "SEC-T09b A locked account does not lock out colleagues on the same network; spraying many accounts from one IP is still stopped",
+        true,
+        "colleague signs in while operations@ is locked (200); IP blocked after 31 failures across different accounts"
+    ],
+    [
+        "SEC-T10 Password reset links are single-use and expire",
+        true,
+        "first use 200; reuse 400; expired 400"
+    ],
+    [
+        "SEC-T11 Errors disclose no internals; security headers on API and app",
+        true,
+        "354 responses scanned: no stack traces, SQL errors or paths; headers present; no X-Powered-By"
+    ],
+    [
+        "SEC-T12 HTTPS-only sign-in option refuses plain HTTP",
+        true,
+        "403 \u201cSign-in requires a secure (HTTPS) connection.\u201d"
+    ]
+]

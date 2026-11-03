@@ -59,6 +59,7 @@ final class EmailController {
         $u = Auth::require('email.send');
         Db::tx(function () use ($u, $pa) { $e = self::find($u, (int)$pa['id']); if ($e['status'] !== 'draft') throw new HttpError(409, 'Only drafts can be queued');
             if (!$e['to_addr']) throw new HttpError(422, Validate::MSG, ['to' => 'Add a recipient']); if (!$e['subject'] || !$e['body']) throw new HttpError(422, 'Add a subject and a message');
+            if (preg_match('/\[Fill in:[^\]]*\]/', $e['subject'] . ' ' . $e['body'], $mm)) throw new HttpError(422, 'Replace ' . $mm[0] . ' with real text before sending', ['body' => 'Unfilled placeholder']);
             $ctx = Template::context($e['contact_id'] ? (int)$e['contact_id'] : null, $e['trip_id'] ? (int)$e['trip_id'] : null, $e['booking_id'] ? (int)$e['booking_id'] : null, $e['invoice_id'] ? (int)$e['invoice_id'] : null);
             [$s, $m1] = Template::render($e['subject'], $ctx); [$b, $m2] = Template::render($e['body'], $ctx); if ($m = array_values(array_unique(array_merge($m1, $m2)))) throw new HttpError(422, 'Missing values for: ' . implode(', ', $m) . '. Link the related record or edit the text.', ['body' => 'Missing variable values']);
             if (!Db::exec("UPDATE emails SET status='queued', subject=?, body=?, updated_at=UTC_TIMESTAMP(), version=version+1 WHERE id=? AND status='draft'", [str_replace(["\r", "\n"], ' ', $s), $b, $e['id']])) throw new HttpError(409, 'Already queued');

@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
 // Single API entry point. Application code lives OUTSIDE the web root (see DEPLOYMENT guide); LTI_APP_DIR overrides the default.
-$appDir = getenv('LTI_APP_DIR') ?: dirname(__DIR__, 2) . '/app';
+// Shared hosting usually cannot set environment variables: api/app_path.php may return the private folder's absolute path.
+$appDir = getenv('LTI_APP_DIR') ?: (is_file(__DIR__ . '/app_path.php') ? (string)(require __DIR__ . '/app_path.php') : dirname(__DIR__, 2) . '/app');
 require $appDir . '/bootstrap.php';
+\LTI\Http::securityHeaders();
 use LTI\{Http, HttpError, Idempotency, Router, Session};
-use LTI\Controllers\{AuthController, BookingController, ContactController, DocumentController, FormController, GroupController, ItineraryController, LibraryController, PortalController, StaffController, SupplierController, TripController, QuoteController, InvoiceController, PaymentController, PayableController, CommissionController, FinanceController, TaskController, EmailTemplateController, EmailController, OpsController, WorkflowController, CallController, CallbackController};
+use LTI\Controllers\{AuthController, BookingController, ContactController, DocumentController, FormController, GroupController, ItineraryController, LibraryController, PortalController, StaffController, SupplierController, TripController, QuoteController, InvoiceController, PaymentController, PayableController, CommissionController, FinanceController, TaskController, EmailTemplateController, EmailController, OpsController, WorkflowController, CallController, CallbackController, DashboardController, SettingsController, AdminController};
 $dev = ($GLOBALS['LTI_CFG']['env'] ?? 'production') === 'development';
 try {
     Session::start();
@@ -229,12 +231,26 @@ try {
     $r->add('POST', '/callbacks/{id}/reschedule', function ($p) { return CallbackController::reschedule($p); });
     $r->add('POST', '/callbacks/{id}/complete', function ($p) { return CallbackController::setStatus($p, 'completed'); });
     $r->add('POST', '/callbacks/{id}/cancel', function ($p) { return CallbackController::setStatus($p, 'cancelled'); });
+    $r->add('GET', '/dashboard', function ($p) { return DashboardController::get(); });
+    $r->add('POST', '/library/import-revision27', function ($p) { return LibraryController::importRevision27(); });
+    $r->add('GET', '/settings', function ($p) { return SettingsController::get(); });
+    $r->add('PUT', '/settings/{section}', function ($p) { return SettingsController::update($p); });
+    $r->add('GET', '/portal/terms', function ($p) { return SettingsController::portalTerms(); });
+    $r->add('GET', '/admin/tags', function ($p) { return AdminController::tags(); });
+    $r->add('POST', '/admin/tags', function ($p) { return AdminController::createTag(); });
+    $r->add('PUT', '/admin/tags/{id}', function ($p) { return AdminController::renameTag($p); });
+    $r->add('DELETE', '/admin/tags/{id}', function ($p) { return AdminController::deleteTag($p); });
+    $r->add('GET', '/admin/roles', function ($p) { return AdminController::roles(); });
+    $r->add('PUT', '/admin/roles/{code}/permissions', function ($p) { return AdminController::setRolePermissions($p); });
+    $r->add('GET', '/travelers', function ($p) { return AdminController::travelers(); });
+    $r->add('POST', '/support-requests', function ($p) { return AdminController::supportRequest(); });
+    $r->add('POST', '/admin/import-revision27-settings', function ($p) { return AdminController::importSettings(); });
     $r->add('GET', '/health', function () { return ['ok' => true]; });
     $replayCode = null;
     if ($method === 'POST') { [$out, $replayCode] = Idempotency::run($path, function () use ($r, $method, $path) { return $r->dispatch($method, $path); }); }
     else $out = $r->dispatch($method, $path);
     if ($replayCode !== null) header('Idempotent-Replay: true');
-    Http::json($out, $replayCode !== null ? 200 : (($method === 'POST' && in_array($path, ['/contacts', '/trips', '/groups', '/suppliers', '/bookings', '/forms', '/documents', '/library/folders', '/library/templates', '/quotes', '/invoices', '/payments', '/payables', '/commission-rules', '/finance/rates', '/finance/tax-rates', '/tasks', '/email-templates', '/emails', '/workflows', '/followups', '/calls', '/callbacks'], true)) ? 201 : 200));
+    Http::json($out, $replayCode !== null ? 200 : (($method === 'POST' && in_array($path, ['/contacts', '/trips', '/groups', '/suppliers', '/bookings', '/forms', '/documents', '/library/folders', '/library/templates', '/quotes', '/invoices', '/payments', '/payables', '/commission-rules', '/finance/rates', '/finance/tax-rates', '/tasks', '/email-templates', '/emails', '/workflows', '/followups', '/calls', '/callbacks', '/support-requests'], true)) ? 201 : 200));
 } catch (HttpError $e) {
     Http::json(['error' => $e->getMessage(), 'fields' => (object)$e->fields], $e->getCode());
 } catch (Throwable $e) {

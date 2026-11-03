@@ -2,7 +2,7 @@
     [
         "TC01 Create task; MySQL record",
         true,
-        "todo|high|1|2|2026-11-04"
+        "todo|high|1|2|2026-11-05"
     ],
     [
         "TC02 Assign task to a staff member; history and notification recorded",
@@ -82,7 +82,7 @@
     [
         "TC20 Delayed follow-ups stored with UTC time from the configured time zone",
         true,
-        "workflow follow-up 2026-11-03 14:00:00 UTC (09:00 New York); manual follow-up 08:30 Manila = 2026-11-02 00:30:00 UTC; jobs pending"
+        "workflow follow-up 2026-11-04 14:00:00 UTC (09:00 New York); manual follow-up 08:30 Manila = 2026-11-03 00:30:00 UTC; jobs pending"
     ],
     [
         "TC21 Pending jobs persist across a server restart",
@@ -122,7 +122,7 @@
     [
         "Date trigger: departure approaching (agency time zone)",
         true,
-        "execution for Amalfi (32 days before departure)"
+        "execution for Amalfi (31 days before departure)"
     ],
     [
         "TC32 Local scheduler: CLI worker and token-protected HTTP endpoint",

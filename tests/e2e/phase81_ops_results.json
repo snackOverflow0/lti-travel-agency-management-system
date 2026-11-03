@@ -1,0 +1,37 @@
+[
+ {
+  "name": "Tasks: create through the screen (assigned, overdue, linked contact); Overdue tab; MySQL record and assignment history",
+  "ok": true,
+  "detail": "task 1: todo|high|5|2|2026-11-01; history + notification to assignee; listed under Overdue"
+ },
+ {
+  "name": "Tasks: edit, complete (checkbox), reopen, comment, archive — each verified in MySQL; persists after refresh",
+  "ok": true,
+  "detail": "priority urgent → completed via dialog (event) → persisted after refresh → reopened via list checkbox → comment → archived; history: assigned_to:5,priority:urgent,status:completed,status:todo,status:archived"
+ },
+ {
+  "name": "Task access: assignee sees the task with the other advisor’s client as Restricted record; unrelated role cannot see it",
+  "ok": true,
+  "detail": "advisor2 sees task, contact shown as Restricted record; sales sees 0"
+ },
+ {
+  "name": "Notification bell: badge equals server unread count (no samples); clicking an item marks it read in MySQL",
+  "ok": true,
+  "detail": "badge 2 = API unread; bell click persisted read_at"
+ },
+ {
+  "name": "Notifications page: mark unread, dismiss, mark all read — persisted",
+  "ok": true,
+  "detail": "unread, mark-all-read and dismiss persisted"
+ },
+ {
+  "name": "Calendar: task due date and trip departure appear on the correct days; month navigation",
+  "ok": true,
+  "detail": "task on 2026-11-03; Amalfi departure on 2026-12-03"
+ },
+ {
+  "name": "Mobile 390px: Tasks and Calendar have no page overflow",
+  "ok": true,
+  "detail": "overflow [0,0,0]"
+ }
+]

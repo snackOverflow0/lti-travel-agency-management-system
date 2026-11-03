@@ -1,0 +1,32 @@
+[
+ {
+  "name": "C-01 Finance creates and issues an invoice through the screen (server total)",
+  "ok": false,
+  "detail": "boot: page.waitForFunction: Timeout 15000ms exceeded."
+ },
+ {
+  "name": "C-02 Partial payment by double-clicking Record payment creates exactly one payment",
+  "ok": false,
+  "detail": "boot: page.waitForFunction: Timeout 15000ms exceeded."
+ },
+ {
+  "name": "C-03 Overpayment through the screen is refused and nothing changes",
+  "ok": false,
+  "detail": "boot: page.waitForFunction: Timeout 15000ms exceeded."
+ },
+ {
+  "name": "C-04 Final payment takes the invoice to Paid with zero balance",
+  "ok": false,
+  "detail": "boot: page.waitForFunction: Timeout 15000ms exceeded."
+ },
+ {
+  "name": "C-05 Commission: rule created, then calculated from a booking through the screen; amounts match the rule",
+  "ok": false,
+  "detail": "boot: page.waitForFunction: Timeout 15000ms exceeded."
+ },
+ {
+  "name": "C-06 Reports and dashboard reconcile with MySQL",
+  "ok": false,
+  "detail": "boot: page.waitForFunction: Timeout 15000ms exceeded."
+ }
+]

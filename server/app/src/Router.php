@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace LTI;
 final class Router {
     private array $routes = [];
-    public function add(string $method, string $pattern, callable $h): void { $this->routes[] = [$method, '#^' . preg_replace_callback('#\{(\w+)\}#', function ($m) { return $m[1] === 'token' ? '(?P<token>[a-f0-9]{32})' : '(?P<' . $m[1] . '>[0-9]+)'; }, str_replace('.', '\.', $pattern)) . '$#', $h]; }
+    public function add(string $method, string $pattern, callable $h): void { $this->routes[] = [$method, '#^' . preg_replace_callback('#\{(\w+)\}#', function ($m) { return in_array($m[1], ['section', 'code'], true) ? '(?P<' . $m[1] . '>[a-z_]{1,40})' : ($m[1] === 'token' ? '(?P<token>[a-f0-9]{32})' : '(?P<' . $m[1] . '>[0-9]+)'); }, str_replace('.', '\.', $pattern)) . '$#', $h]; }
     public function dispatch(string $method, string $path) {
         $allowed = false;
         foreach ($this->routes as [$m, $re, $h]) {

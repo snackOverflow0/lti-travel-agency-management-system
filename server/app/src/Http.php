@@ -15,10 +15,19 @@ final class Http {
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store');
         header('X-Content-Type-Options: nosniff');
+        self::securityHeaders();
         echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
     public static function ip(): string {
         if (!empty($GLOBALS['LTI_CFG']['security']['trust_proxy']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
         return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     }
+    /** Security headers for every API response (JSON, downloads, CSV). */
+    public static function securityHeaders(): void {
+        if (headers_sent()) return; header_remove('X-Powered-By');
+        header('X-Content-Type-Options: nosniff'); header('X-Frame-Options: DENY'); header('Referrer-Policy: no-referrer');
+        header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; sandbox"); header('Cross-Origin-Resource-Policy: same-origin');
+        if (self::isHttps()) header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+    public static function isHttps(): bool { return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' && !empty($GLOBALS['LTI_CFG']['trust_proxy_https'])) || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443; }
 }

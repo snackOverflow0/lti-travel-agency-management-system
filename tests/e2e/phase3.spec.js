@@ -2,14 +2,14 @@
 const { chromium } = require(process.env.PW || 'playwright');
 const { execSync } = require('child_process');
 const BASE = process.env.BASE || 'http://127.0.0.1:8000/';
-const sql = q => execSync(`mysql -uroot -N -e "${q.replace(/"/g, '\\"')}" lti_test`).toString().trim();
+const sql = q => execSync(`mysql -uroot -N -e "${q.replace(/"/g, '\\"')}" ${process.env.DB || 'lti_test'}`).toString().trim();
 const results = []; let browser; const st = {};
 const A = (c, m) => { if (!c) throw new Error(m); };
 const S = async (label, pr) => { try { return await pr; } catch (e) { throw new Error(label + ': ' + String(e.message).split('\n')[0]); } };
 const waitDb = async (label, q, ok, ms = 12000) => { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { v = sql(q); if (ok(v)) return v; await new Promise(r => setTimeout(r, 300)); } throw new Error(label + ': database value ' + JSON.stringify(v)); };
 async function T(name, fn, vp) { const ctx = await browser.newContext({ viewport: vp || { width: 1366, height: 900 }, reducedMotion: 'reduce' }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   let ok = false, d = ''; try { d = (await fn(p, ctx)) || ''; ok = !errs.length; if (errs.length) d += ' JSERR ' + errs.slice(0, 3).join('|'); } catch (e) { d = String(e.message).split('\n')[0]; }
-  results.push({ name, ok, detail: d }); console.log((ok ? 'PASS ' : 'FAIL ') + name + ' — ' + d); await ctx.close(); }
+  results.push({ name, ok, detail: d }); console.log((ok ? 'PASS ' : 'FAIL ') + name + ' — ' + d); if (process.env.SHOTS) { try { await p.screenshot({ path: process.env.SHOTS + '/' + (process.env.SUITE || 'e2e') + '-' + String(results.length).padStart(2, '0') + '.png' }); } catch (e) { } } await ctx.close(); }
 async function login(p, email, pw = 'Dev-Password-2026') { await p.goto(BASE + '#/login'); await S('login form', p.waitForSelector('#em')); await p.fill('#em', email); await p.fill('#pw', pw); await p.click('button:has-text("Sign in")'); await S('boot', p.waitForFunction(() => window.__LTI_LIVE, null, { timeout: 15000 })); }
 const openTrip = async (p, id) => { await p.evaluate(i => { S.cur = 'd' + i; S.tsec = 'Overview'; go('trip'); }, id); await S('trip page', p.waitForSelector('#m input[aria-label="Trip name"]')); };
 (async () => { browser = await chromium.launch({ executablePath: process.env.CHROME });
@@ -76,7 +76,7 @@ await T('TC12 Archive a trip from the trip Actions menu; related records intact'
 await T('TC13 Contacts and Staff still work (live)', async p => {
   await login(p, 'admin@lti.test'); await p.click('nav.tn a:has-text("Contacts")'); await S('contacts', p.waitForSelector('[data-live=contacts] tbody tr')); await p.click('#m button:has-text("New contact")'); await p.fill('#lcf_firstName', 'Phase3'); await p.fill('#lcf_lastName', 'Check'); await p.click('#ov .btn.g1');
   await S('saved', p.waitForSelector('#m h1:has-text("Phase3 Check")')); A(sql("SELECT COUNT(*) FROM contacts WHERE first_name='Phase3'") === '1', 'db'); await p.click('button.pf'); await p.click('.dd a:has-text("Staff accounts")'); await S('staff', p.waitForSelector('[data-live=staff] tbody tr')); return 'ok'; });
-await T('TC14 Dashboard and prototype modules remain accessible and labelled', async p => {
-  await login(p, 'owner@lti.test'); const r = await p.evaluate(() => { const bad = []; for (const k of Object.keys(Pg)) { if (k == 'lcontact') continue; try { if (k == 'trip') S.cur = 't1'; go(k); } catch (e) { bad.push(k + ':' + e.message); } } go('dashboard'); return { bad, n: Object.keys(Pg).length, dash: !!document.querySelector('#m .proto-note'), bookings: (go('payments'), !!document.querySelector('#m .proto-note')) }; });
-  A(!r.bad.length && r.dash && r.bookings, JSON.stringify(r)); return r.n + ' pages render; prototype pages labelled'; });
+await T('TC14 All modules render; live pages unlabelled; remaining prototype pages labelled', async p => {
+  await login(p, 'owner@lti.test'); const r = await p.evaluate(() => { const bad = []; for (const k of Object.keys(Pg)) { if (k == 'lcontact') continue; try { if (k == 'trip') S.cur = 't1'; go(k); } catch (e) { bad.push(k + ':' + e.message); } } go('dashboard'); return { bad, n: Object.keys(Pg).length, dashLive: !document.querySelector('#m .proto-note'), paymentsLive: (go('payments'), !document.querySelector('#m .proto-note')), agencyLive: (go('agency'), !document.querySelector('#m .proto-note')) }; });
+  A(!r.bad.length && r.dashLive && r.paymentsLive && r.agencyLive, JSON.stringify(r)); return r.n + ' pages render; Dashboard and Payments live (unlabelled); Agency settings now live (no prototype label)'; });
 console.log('PHASE3 E2E SUMMARY ' + results.filter(r => r.ok).length + '/' + results.length); require('fs').writeFileSync(__dirname + '/phase3_results.json', JSON.stringify(results, null, 1)); await browser.close(); })();

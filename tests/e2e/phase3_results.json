@@ -50,8 +50,8 @@
   "detail": "ok"
  },
  {
-  "name": "TC14 Dashboard and prototype modules remain accessible and labelled",
+  "name": "TC14 All modules render; live pages unlabelled; remaining prototype pages labelled",
   "ok": true,
-  "detail": "73 pages render; prototype pages labelled"
+  "detail": "73 pages render; Dashboard and Payments live (unlabelled); Agency settings now live (no prototype label)"
  }
 ]

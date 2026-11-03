@@ -1,0 +1,56 @@
+{
+ "results": [
+  {
+   "name": "XSS: stored script payloads in contact, call notes and task titles are displayed as text and never execute",
+   "ok": true,
+   "detail": "payloads rendered as text on contacts, contact page, call history, call details; window.__xss undefined; no injected elements"
+  },
+  {
+   "name": "Responsive 360px: every page (owner) has no horizontal page overflow; dialog and softphone fit",
+   "ok": true,
+   "detail": "73 pages without horizontal overflow; dialog and softphone within 360px"
+  },
+  {
+   "name": "Responsive 390px: every page (owner) has no horizontal page overflow; dialog and softphone fit",
+   "ok": true,
+   "detail": "73 pages without horizontal overflow; dialog and softphone within 390px"
+  },
+  {
+   "name": "Responsive 768px: every page (owner) has no horizontal page overflow; dialog and softphone fit",
+   "ok": true,
+   "detail": "73 pages without horizontal overflow; dialog and softphone within 768px"
+  },
+  {
+   "name": "Responsive 1024px: every page (owner) has no horizontal page overflow; dialog and softphone fit",
+   "ok": true,
+   "detail": "73 pages without horizontal overflow; dialog and softphone within 1024px"
+  },
+  {
+   "name": "Responsive 1440px: every page (owner) has no horizontal page overflow; dialog and softphone fit",
+   "ok": true,
+   "detail": "73 pages without horizontal overflow; dialog and softphone within 1440px"
+  },
+  {
+   "name": "Client portal 360px: itinerary readable, no overflow",
+   "ok": true,
+   "detail": "portal shows trip; overflow 0px"
+  },
+  {
+   "name": "Client portal 390px: itinerary readable, no overflow",
+   "ok": true,
+   "detail": "portal shows trip; overflow 0px"
+  },
+  {
+   "name": "Keyboard: focus is visible on interactive controls",
+   "ok": true,
+   "detail": "{\"tag\":\"BUTTON\",\"outline\":\"solid 2px\",\"shadow\":\"none\"}"
+  }
+ ],
+ "overflow": {
+  "360": [],
+  "390": [],
+  "768": [],
+  "1024": [],
+  "1440": []
+ }
+}

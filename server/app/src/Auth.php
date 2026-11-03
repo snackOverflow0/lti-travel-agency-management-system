@@ -23,8 +23,12 @@ final class Auth {
     public static function login(string $email, string $password): array {
         $cfg = $GLOBALS['LTI_CFG']['security']; $ip = Http::ip(); $email = mb_strtolower(trim($email));
         $win = (int)($cfg['login_window_minutes'] ?? 15); $max = (int)($cfg['login_max_failures'] ?? 5);
-        $fails = (int)(Db::one('SELECT COUNT(*) n FROM login_attempts WHERE success=0 AND (email=? OR ip=?) AND created_at > (UTC_TIMESTAMP() - INTERVAL ? MINUTE)', [$email, $ip, $win])['n'] ?? 0);
-        if ($fails >= $max) { Audit::log(null, 'auth.rate_limited', 'user', null, ['email' => $email]); throw new HttpError(429, "Too many failed sign-in attempts. Try again in $win minutes."); }
+        // Separate limits: per account (stops guessing one password) and per IP across accounts (stops spraying).
+        // A shared office IP is not locked out by one person's typing mistakes.
+        $ipMax = (int)($cfg['login_max_failures_per_ip'] ?? 30);
+        $fails = (int)(Db::one('SELECT COUNT(*) n FROM login_attempts WHERE success=0 AND email=? AND created_at > (UTC_TIMESTAMP() - INTERVAL ? MINUTE)', [$email, $win])['n'] ?? 0);
+        $ipFails = (int)(Db::one('SELECT COUNT(*) n FROM login_attempts WHERE success=0 AND ip=? AND created_at > (UTC_TIMESTAMP() - INTERVAL ? MINUTE)', [$ip, $win])['n'] ?? 0);
+        if ($fails >= $max || $ipFails >= $ipMax) { Audit::log(null, 'auth.rate_limited', 'user', null, ['email' => $email]); throw new HttpError(429, "Too many failed sign-in attempts. Try again in $win minutes."); }
         $u = Db::one('SELECT id, password_hash, is_active FROM users WHERE email=?', [$email]);
         $ok = $u && password_verify($password, $u['password_hash']);
         if (!$u) password_hash($password, PASSWORD_DEFAULT); // keep timing similar for unknown emails

@@ -125,7 +125,12 @@ function setPage(): string { const cfg = can('calls.configure');
 /** Hands the number to the device's phone/calling app. Replaceable (window.__ltiTelLauncher) so automated tests can observe the exact URI without invoking an OS handler. */
 function launchTel(uri: string) { if (typeof w.__ltiTelLauncher === 'function') { w.__ltiTelLauncher(uri); return; }
   const a = document.createElement('a'); a.href = uri; a.rel = 'noopener'; a.style.display = 'none'; document.body.append(a); try { a.click(); } catch { /* no handler on this device */ } a.remove(); }
-export const LIVE_PHONE = ['calls', 'callhist', 'callan', 'voicemail', 'callset'];
+export const LIVE_PHONE = ['calls', 'callhist', 'callan', 'voicemail', 'callset', 'recordings', 'smart'];
+/** Pages that previously displayed fabricated recordings or received emails now state plainly that the feature is unavailable. */
+export function installUnavailable() {
+  Pg.recordings = () => hd('Call recordings', '', 'Unavailable') + emp('vm', 'Call recording is not available', 'LTI never records calls. Recording would require a telephony provider plus documented consent, notice, access, retention and deletion rules.');
+  Pg.smart = () => hd('Smart inbox', '', 'Unavailable') + emp('mail', 'Inbound email is not connected', 'LTI does not read a mailbox, so no received emails are shown here. Connecting one requires confirmed IMAP access on the hosting plan. Sent messages and drafts are recorded in the email module.');
+}
 export async function installPhone(perms: (p: string) => boolean) {
   can = perms; if (X.role === 'Traveler' || !can('calls.use')) return;
   X.phone.call = null; X.phone.open = 0; ['phIncoming', 'phTick', 'phFire', 'phFireRaw', 'phTransfer', 'phConf', 'vmMark'].forEach(f => { w[f] = () => {}; });

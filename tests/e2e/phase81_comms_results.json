@@ -1,0 +1,37 @@
+[
+ {
+  "name": "Email templates: create through the screen; unknown variable refused; preview fills real values",
+  "ok": true,
+  "detail": "unknown {{contact.ssn}} refused (not saved); template saved; preview “Documents for Amalfi Coast Anniversary”"
+ },
+ {
+  "name": "Outbox: compose with template → draft → queue → real worker + SMTP → “Accepted by mail server” (never “delivered”)",
+  "ok": true,
+  "detail": "draft → queued (subject rendered) → worker sent to local SMTP (message received) → UI “Accepted by mail server”, attempt logged, no delivery claim"
+ },
+ {
+  "name": "Emails page: Inbox states inbound email is not connected; Campaigns not implemented; no sample messages",
+  "ok": true,
+  "detail": "honest inbox and campaigns pages"
+ },
+ {
+  "name": "Workflow builder: build through the screen, save, enable, preview; real trip status change runs it via the worker; history shows the run",
+  "ok": true,
+  "detail": "built in the UI (trigger, condition event.to=Booked, 2 actions) → draft in MySQL → previewed → enabled → real status change → worker → task created → completed run in history"
+ },
+ {
+  "name": "Follow-ups: schedule and cancel through the screen; scheduler card reflects real worker runs",
+  "ok": true,
+  "detail": "09:30 Manila stored as 01:30 UTC; cancelled; scheduler card shows real status"
+ },
+ {
+  "name": "Access: advisor cannot open Automations; finance cannot open Outbox",
+  "ok": true,
+  "detail": "restricted as expected (server also refuses)"
+ },
+ {
+  "name": "Mobile 390px: Outbox, Automations and builder dialog fit",
+  "ok": true,
+  "detail": "no overflow [0,0,0,0]; builder within 390px"
+ }
+]

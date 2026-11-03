@@ -1,0 +1,42 @@
+[
+    [
+        "A01 Settings: staff can read; only administrators change; validation enforced",
+        true,
+        "advisor read 200 \/ write 403; bad email and time zone 422; saved to app_settings"
+    ],
+    [
+        "A02 Booking controls are enforced by the server when confirming",
+        true,
+        "draft saved without them (201); confirm without confirmation number\/travelers 422; confirm with them 200"
+    ],
+    [
+        "A03 Terms: hidden from clients until published; only administrators edit",
+        true,
+        "draft hidden; published visible to client; unpublished hidden; staff portal call 403"
+    ],
+    [
+        "A04 Tags: create, duplicate refused, rename, in-use protected, delete unused",
+        true,
+        "create 200, duplicate 409, advisor 403, rename 200, in-use delete 409, unused delete 200"
+    ],
+    [
+        "A05 Roles: only owners edit; change applies on the next request; owner and client roles protected; audited",
+        true,
+        "admin edit 403; sales lost calls access immediately (403) and regained it; owner role 409; client staff permission 422; unknown 422; 2 audit entries"
+    ],
+    [
+        "A06 Travelers: scoped to visible trips; passport masked",
+        true,
+        "advisor sees Daniel Shah (passport country US, expiry flagged; no number stored); advisor2 does not"
+    ],
+    [
+        "A07 Support request creates a real task for an administrator",
+        true,
+        "task + notification for an administrator"
+    ],
+    [
+        "A08 Settings import: configuration only, idempotent; fictional contact details not imported",
+        true,
+        "8 trip tags imported, re-run 0; advisor 403; agency email kept; example email\/phone\/signature not imported"
+    ]
+]
